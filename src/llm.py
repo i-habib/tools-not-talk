@@ -33,7 +33,9 @@ class ModelCfg:
 
 
 MODELS = {
-    "gpt-oss-120b": ModelCfg("gpt-oss-120b", "cerebras", "gpt-oss-120b", rpm=28, tpm=60_000,
+    # Cerebras free tier (inference-docs.cerebras.ai/support/rate-limits, 2026-09-25):
+    # gpt-oss-120b 5 RPM, 30K uncached TPM, 90K total TPM, 1M TPH, 1M TPD (token-bucket replenishment).
+    "gpt-oss-120b": ModelCfg("gpt-oss-120b", "cerebras", "gpt-oss-120b", rpm=5, tpm=28_000,
                              extra={"reasoning_effort": "low"}),
     "gpt-oss-120b-groq": ModelCfg("gpt-oss-120b-groq", "groq", "openai/gpt-oss-120b", rpm=28, tpm=7_500,
                                   extra={"reasoning_effort": "low"}),

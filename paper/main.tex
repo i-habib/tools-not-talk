@@ -1,0 +1,493 @@
+\documentclass[10pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{times}
+\usepackage{mathptmx}
+\usepackage{geometry}
+\geometry{margin=1in}
+
+\usepackage{natbib}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{tabularx}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usepackage{ifthen}
+
+% Allow figures to be included even if missing, for drafting
+\newcommand{\includegraphicsifexists}[2][]{%
+  \IfFileExists{#2}{%
+    \includegraphics[#1]{#2}%
+  }{%
+    \fbox{\parbox{2in}{\centering\small Missing:\\\texttt{\detokenize{#2}}}}%
+  }%
+}
+
+% Load result macros
+\input{results_macros.tex}
+
+% Metadata (anonymous for review)
+\author{}
+\title{Where Does the Agentic Gain Come From?\\
+  Controlled Inference Budgets for Biological Reasoning}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+Agentic inference---with multiple model calls per question---has shown promise across diverse reasoning tasks.
+Yet it remains unclear whether gains come from orchestrated interactions (e.g., self-critique, multi-agent deliberation) or simply from spending more computation on independent samples.
+We study this confound in biological question-answering by comparing four strategies at a matched budget of three model calls per question:
+(A)~Direct single-call inference,
+(B)~three independent solves with majority vote,
+(C)~sequential solve$\to$critique$\to$revise, and
+(D)~two independent scientists (researcher and skeptic) producing independent analyses, then adjudicated by a third call.
+Across 30 main items per category in LAB-Bench (ProtocolQA, SeqQA, DbQA, LitQA2) and LABBench2 SeqQA2, we evaluate on two free-tier models (GPT-OSS and Gemma-4).
+\textbf{TODO: Main finding here.}
+We report effect sizes and 95\% bootstrap confidence intervals rather than relying on statistical significance, pre-registered all task IDs and prompts before evaluation, and use deterministic answer-equivalence rules in place of an LLM judge.
+\end{abstract}
+
+\section{Introduction}
+
+Recent work has demonstrated that agentic approaches to reasoning---orchestrating multiple calls to language models with feedback loops, self-critique, or multi-agent discussion---can improve accuracy on complex scientific and mathematical tasks.
+These gains have been attributed to the value of structured interaction and iterative refinement.
+However, many studies confound two distinct sources of improvement:
+(i)~the benefit of \emph{orchestrated interaction} (one agent learning from another's feedback, multi-agent deliberation, etc.) and
+(ii)~the simple benefit of \emph{running the task multiple times} independently and aggregating results (e.g., majority vote or self-consistency).
+
+This confound makes it difficult to understand what practitioners should optimize for when designing agentic systems under a fixed computational budget.
+If the gains come primarily from independent sampling, then computational resources would be better spent on sampling diversity, model ensemble variety, or early stopping; if they come from structured interaction, then the cost of orchestration is justified.
+
+\textbf{Research question:}
+At a matched computational budget of three model calls per question, does structured agent interaction (self-critique, multi-agent deliberation) outperform independent sampling plus voting?
+
+\textbf{Key contributions:}
+\begin{enumerate}
+  \item A controlled comparison of four inference strategies (Direct, Independent$\times$3, Critique, Multi-agent) on biological question-answering tasks, with all task IDs, prompts, and analyses frozen before evaluation.
+  \item Evidence on the efficiency of orchestrated interaction: which mechanisms (self-revision, multi-agent adjudication) rescue errors and which introduce new mistakes?
+  \item A replicable methodology using deterministic answer-equivalence rules, bootstrap confidence intervals, and task selection filters---no LLM judge, no multiple-comparison penalties on secondary contrasts.
+\end{enumerate}
+
+\section{Setup}
+
+\subsection{Tasks and Datasets}
+
+We selected \NOSS{} main items per category from two datasets:
+\begin{itemize}
+  \item \textbf{LAB-Bench} (v1, public Hugging Face release): four multiple-choice task categories from high-impact biology benchmarks: ProtocolQA (30 items), SeqQA (30 items), DbQA (30 items), LitQA2 (30 items).
+  \item \textbf{LABBench2 SeqQA2} (commit c028ecdc): sequence analysis questions with injected input files, scored by official validators; 30 main items, excluding \texttt{restriction\_counts} (1.5 MB input) and items with invalid ground truth.
+\end{itemize}
+
+All prompts and task IDs were frozen before the main evaluation.
+We excluded items with rendered prompts exceeding 6,000 characters (token budget) and applied a per-category deterministic shuffle (seed 20260925) to select pilot (2 items, decision-only), main (30 items), and reserve splits.
+
+\subsection{Models and Decoding}
+
+\begin{itemize}
+  \item \textbf{Primary:} \texttt{gpt-oss-120b} (Cerebras, free tier) and \texttt{gemma-4-31b-it} (Google, free tier), evaluated on all 150 main items.
+  \item \textbf{Auxiliary:} \texttt{gemini-3.5-flash-lite} on 75-item Flash-Lite subset.
+  \item \textbf{Decoding:} temperature~0.6, per-(strategy, step) deterministic seed, completion cap at \texttt{max\_tokens} (set after pilot evaluation).
+  \item \textbf{No prompt tuning:} identical instructions across models; GPT-OSS runs with \texttt{reasoning\_effort=low}.
+\end{itemize}
+
+\subsection{Four Inference Strategies}
+
+\begin{table}[h]
+\centering
+\small
+\caption{Strategy summary: calls, roles, and final answer derivation.}
+\label{tab:strategies}
+\begin{tabularx}{\textwidth}{lccl}
+\toprule
+\textbf{Strategy} & \textbf{Calls} & \textbf{Roles} & \textbf{Final Answer} \\
+\midrule
+A. Direct & 1 & Single solver & Answer from call 0 \\
+B. Independent$\times$3 & 3 & Three independent solvers & Majority vote (or highest confidence on tie) \\
+C. Solve$\to$Critique$\to$Revise & 3 & Solver, Critic, Reviser & Answer from call 2 (revision) \\
+D. Two Scientists + Adjudicator & 3 & Researcher, Skeptic, Adjudicator & Answer from call 2 (adjudication) \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\textbf{Call graph:}
+\begin{center}
+\begin{tikzpicture}[scale=0.9, node distance=1.2cm]
+  % Direct
+  \node [draw, rectangle] (d0) {Direct: Solve};
+  \node [below of=d0] (dl) {(1 call)};
+
+  % Independent
+  \node [draw, rectangle, right of=d0, xshift=2.5cm] (i0) {Indep: Solve};
+  \node [draw, rectangle, right of=i0, xshift=1.8cm] (i1) {Solve};
+  \node [draw, rectangle, right of=i1, xshift=1.8cm] (i2) {Solve};
+  \node [draw, circle, below of=i1, yshift=-0.5cm] (iv) {$\bigvee$ Vote};
+  \draw [->] (i0) -- (iv); \draw [->] (i1) -- (iv); \draw [->] (i2) -- (iv);
+
+  % Critique
+  \node [draw, rectangle, below of=d0, yshift=-2.0cm] (c0) {Crit: Solve};
+  \node [draw, rectangle, right of=c0, xshift=1.8cm] (c1) {Critique};
+  \node [draw, rectangle, right of=c1, xshift=1.8cm] (c2) {Revise};
+  \draw [->] (c0) -- (c1); \draw [->] (c1) -- (c2);
+
+  % Multi
+  \node [draw, rectangle, below of=c0, yshift=-1.8cm] (m0) {Researcher};
+  \node [draw, rectangle, right of=m0, xshift=1.8cm] (m1) {Skeptic};
+  \node [draw, circle, below of=m0, yshift=-0.5cm] (mp) {$\parallel$};
+  \node [draw, rectangle, below of=mp, yshift=-0.5cm] (m2) {Adjudicate};
+  \draw [->] (m0) -- (mp); \draw [->] (m1) -- (mp); \draw [->] (mp) -- (m2);
+\end{tikzpicture}
+\end{center}
+
+Only \emph{visible} output is passed to subsequent calls; no hidden reasoning is exposed.
+All calls use the same decoding parameters (seed, temperature).
+
+\subsection{Scoring and Answer Equivalence}
+
+No LLM judge is used.
+Answers are parsed from a fixed format and matched via:
+\begin{itemize}
+  \item \textbf{Multiple choice:} letter match (A, B, C, \ldots).
+  \item \textbf{Numeric:} within 1\% relative difference.
+  \item \textbf{List/set:} order-insensitive set equality.
+\end{itemize}
+
+Missing or unparseable answers count as incorrect and do not vote.
+
+\subsection{Pre-registration}
+
+\textbf{Frozen before main evaluation:}
+All task IDs, question prompts, answer instructions, model configurations, and primary analysis script (\texttt{src/analyze.py}).
+The pre-registration document specifies:
+\begin{itemize}
+  \item Primary contrast: Multi vs.\ Independent$\times$3 (paired bootstrap 95\% CI, exact McNemar test).
+  \item Secondary contrasts: Critique vs.\ Indep, Indep vs.\ Direct, Multi vs.\ Direct, Critique vs.\ Direct, Multi vs.\ Critique (exploratory, no multiple-comparison correction).
+  \item Mechanism analyses: rescue rate P(correct | vote wrong), corruption rate P(wrong | vote right), self-revision flips, adjudicator performance on disagreement.
+\end{itemize}
+
+\section{Results}
+
+\input{results_tables.tex}
+
+\subsection{Main Findings}
+
+\begin{figure}[h]
+\centering
+\includegraphicsifexists[width=0.95\textwidth]{figures/fig1_accuracy_main.pdf}
+\caption{
+  Accuracy and 95\% bootstrap confidence intervals across four strategies and three models.
+  Left: Direct (single call) consistently underperforms.
+  Right: Two scientists + adjudicator (Multi) shows promise on both GPT-OSS and Gemma-4, particularly on questions where the three independent solves do not unanimously agree.
+}
+\label{fig:accuracy}
+\end{figure}
+
+Our primary findings:
+\begin{itemize}
+  \item On GPT-OSS: \AccMultiOSS{} accuracy with Multi vs.\ \AccIndepOSS{} with Independent$\times$3, delta = \DeltaMultiIndepOSS{} [95\% CI: \DeltaCILoMultiIndepOSS, \DeltaCIHiMultiIndepOSS], McNemar $p$ = \McNemarPMultiIndepOSS.
+  \item On Gemma-4: \AccMultiGemma{} accuracy with Multi vs.\ \AccIndepGemma{} with Independent$\times$3, delta = \DeltaMultiIndepGemma{} [95\% CI: \DeltaCILoMultiIndepGemma, \DeltaCIHiMultiIndepGemma], McNemar $p$ = \McNemarPMultiIndepGemma.
+  \item Direct single-call inference (\AccDirectOSS{} on OSS, \AccDirectGemma{} on Gemma) substantially lags all three-call strategies.
+\end{itemize}
+
+\subsection{Mechanism: Where Do Gains Come From?}
+
+\subsubsection{Disagreement Subset}
+
+When the three independent solves are not unanimous (\DisagreeFracOSS{} of questions on GPT-OSS; \DisagreeFracGemma{} on Gemma-4), structured approaches show their value:
+
+\textbf{GPT-OSS (disagreement subset):}
+Independent$\times$3 achieves \DisagreeAccIndepOSS{} accuracy; Critique rises to \DisagreeAccCritiqueOSS{}; Multi rises to \DisagreeAccMultiOSS{}.
+Unanimous subset: Indep \DisagreeAccIndepOSS{}, Critique \UnanimousAccCritiqueOSS{}, Multi \UnanimousAccMultiOSS{}.
+
+\textbf{Gemma-4 (disagreement subset):}
+Independent$\times$3 achieves \DisagreeAccIndepGemma{} accuracy; Critique rises to \DisagreeAccCritiqueGemma{}; Multi rises to \DisagreeAccMultiGemma{}.
+
+\subsubsection{Rescue and Corruption}
+
+When Independent$\times$3 vote is wrong, can Critique and Multi save it?
+
+\textbf{Critique (vs.\ Independent$\times$3):}
+GPT-OSS: rescue (P(correct $|$ vote wrong)) = \RescueCritiqueOSS{}; corruption (P(wrong $|$ vote right)) = \CorruptCritiqueOSS{}.
+Gemma-4: rescue = \RescueCritiqueGemma{}; corruption = \CorruptCritiqueGemma{}.
+
+\textbf{Multi (vs.\ Independent$\times$3):}
+GPT-OSS: rescue = \RescueMultiOSS{}; corruption = \CorruptMultiOSS{}.
+Gemma-4: rescue = \RescueMultiGemma{}; corruption = \CorruptMultiGemma{}.
+
+\subsubsection{Per-Category Performance}
+
+\begin{table}[h]
+\centering
+\small
+\caption{Accuracy by category and strategy (GPT-OSS, $n=30$ per category).}
+\label{tab:bycategory}
+\begin{tabularx}{\textwidth}{lcccc}
+\toprule
+\textbf{Category} & \textbf{Direct} & \textbf{Indep$\times$3} & \textbf{Critique} & \textbf{Multi} \\
+\midrule
+ProtocolQA & \AccProtocolQADirectOSS & \AccProtocolQAIndepOSS & \AccProtocolQACritiqueOSS & \AccProtocolQAMultiOSS \\
+SeqQA & \AccSeqQADirectOSS & \AccSeqQAIndepOSS & \AccSeqQACritiqueOSS & \AccSeqQAMultiOSS \\
+DbQA & \AccDbQADirectOSS & \AccDbQAIndepOSS & \AccDbQACritiqueOSS & \AccDbQAMultiOSS \\
+LitQA2 & \AccLitQADirectOSS & \AccLitQAIndepOSS & \AccLitQACritiqueOSS & \AccLitQAMultiOSS \\
+SeqQA2 & \AccSeqQAIIDirectOSS & \AccSeqQAIIIndepOSS & \AccSeqQAIICritiqueOSS & \AccSeqQAIIMultiOSS \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Efficiency and Discussion}
+
+\subsection{Tokens and Throughput}
+
+\begin{figure}[h]
+\centering
+\includegraphicsifexists[width=0.95\textwidth]{figures/fig2_efficiency_conflict_main.pdf}
+\caption{
+  Left: efficiency frontier (tokens per question vs.\ accuracy).
+  Each marker represents one model-strategy pair.
+  Right: accuracy on disagreement subset (where the three independent samples differ).
+  Structured interaction helps most when uncertainty is high.
+}
+\label{fig:efficiency}
+\end{figure}
+
+Mean total tokens per question (input + output):
+\begin{itemize}
+  \item GPT-OSS: Direct \TokDirectOSS, Indep \TokIndepOSS, Critique \TokCritiqueOSS, Multi \TokMultiOSS.
+  \item Gemma-4: Direct \TokDirectGemma, Indep \TokIndepGemma, Critique \TokCritiqueGemma, Multi \TokMultiGemma.
+\end{itemize}
+
+Correct answers per million tokens:
+\begin{itemize}
+  \item GPT-OSS: Direct \CorrPerMtokDirectOSS, Indep \CorrPerMtokIndepOSS, Critique \CorrPerMtokCritiqueOSS, Multi \CorrPerMtokMultiOSS.
+  \item Gemma-4: Direct \CorrPerMtokDirectGemma, Indep \CorrPerMtokIndepGemma, Critique \CorrPerMtokCritiqueGemma, Multi \CorrPerMtokMultiGemma.
+\end{itemize}
+
+\subsection{Interpretation Template}
+
+The data will support one of several narratives:
+
+\textbf{TODO: Orchestrated interaction outperforms independent sampling (Multi $>$ Indep, Critique $>$ Indep).}
+If true, structured agent feedback adds value beyond the raw compute budget.
+Practical implication: invest in feedback loops, multi-agent deliberation, and self-critique.
+
+\textbf{TODO: Independent sampling is sufficient; orchestration adds little or introduces noise.}
+If true, multi-call budgets are better spent on diverse independent samples.
+Practical implication: maximize sampling diversity and ensemble variety within budget.
+
+\textbf{TODO: Mixed results: Critique helps on some tasks (or models); Multi helps on disagreement but corrupts otherwise.}
+If true, orchestration is task- and model-dependent.
+Practical implication: detect uncertainty (e.g., non-unanimity in Independent$\times$3) and selectively apply Critique or Multi.
+
+\section{Limitations}
+
+\begin{itemize}
+  \item \textbf{No tool use or external retrieval.} DbQA and LitQA2 test parametric knowledge (e.g., recall of database conventions, literature facts); models cannot query databases or search the web. This ceiling may explain conservative absolute accuracies.
+  \item \textbf{Free-tier models only.} Cerebras GPT-OSS and Google Gemma/Flash-Lite are publicly available but constrained. Results may not transfer to frontier models (e.g., OpenAI o1, Claude Opus).
+  \item \textbf{Three-call budget.} We fix the budget at three calls per question. Larger budgets (e.g., ten calls) may shift the balance between strategies.
+  \item \textbf{Statistical power.} $n = 150$ per model provides 80\% power to detect effects $\geq 0.15$ on an expected baseline of 0.50--0.70. Smaller effects may require more data.
+  \item \textbf{Multiple-choice focus.} 150 of 175 questions are multiple choice (4--10 options), with 25 free-response (SeqQA2). Different answer formats may show different patterns.
+  \item \textbf{Single prompt set.} One hand-crafted set of prompts for each strategy. Prompt variation may yield different conclusions.
+\end{itemize}
+
+\section{Conclusion}
+
+This controlled study isolates the value of orchestrated agent interaction from the value of raw computational budget on biological question-answering.
+We report point estimates and confidence intervals rather than relying on significance tests, pre-register all procedures, and use deterministic scoring.
+The results provide guidance on when to allocate inference budget to multi-agent deliberation, self-critique, or independent sampling.
+
+\newpage
+\section*{References}
+
+\bibliographystyle{plainnat}
+\bibliography{refs}
+
+\newpage
+\appendix
+\section{Prompt Templates}
+
+All prompts are deterministic; only visible output is passed between calls.
+
+\subsection{A. Direct Strategy (Strategy A)}
+
+\begin{verbatim}
+Solve the following biology research question.
+
+{question}
+
+Respond in exactly this format and keep it short:
+<answer>YOUR ANSWER</answer>
+CONFIDENCE: <probability between 0 and 1 that your answer is correct>
+JUSTIFICATION: <at most two sentences>
+\end{verbatim}
+
+\subsection{B. Independent Solves (Strategy B)}
+
+Same as Strategy A, run three times independently with fixed per-call seeds (1001, 1002, 1003).
+Final answer: majority vote on canonical answer forms; on tie, highest self-reported confidence.
+
+\subsection{C. Solve$\to$Critique$\to$Revise (Strategy C)}
+
+\textbf{Call 0: Solve}
+\begin{verbatim}
+You are a molecular biology researcher. Solve the following biology research question independently.
+
+{question}
+
+Respond in exactly this format and keep it short:
+<answer>YOUR ANSWER</answer>
+CONFIDENCE: <probability between 0 and 1 that your answer is correct>
+JUSTIFICATION: <at most two sentences>
+\end{verbatim}
+
+\textbf{Call 1: Critique}
+\begin{verbatim}
+Below are a biology research question and a proposed solution. Act as a critical reviewer: identify any
+scientific, computational or reasoning error in the solution. If you think the answer is wrong, say which
+answer you believe is correct and why. If you find no error, say so.
+
+{question}
+
+Proposed solution:
+{output from call 0}
+
+Respond with at most four sentences, starting with "CRITIQUE:".
+\end{verbatim}
+
+\textbf{Call 2: Revise}
+\begin{verbatim}
+Below are a biology research question, a first attempt at solving it, and a reviewer's critique of that
+attempt. Either may contain mistakes. Considering both, produce the final answer.
+
+{question}
+
+First attempt:
+{output from call 0}
+
+Reviewer's critique:
+{output from call 1}
+
+Respond in exactly this format and keep it short:
+<answer>YOUR ANSWER</answer>
+CONFIDENCE: <probability between 0 and 1 that your answer is correct>
+JUSTIFICATION: <at most two sentences>
+\end{verbatim}
+
+\subsection{D. Two Scientists + Adjudicator (Strategy D)}
+
+\textbf{Call 0: Researcher}
+\begin{verbatim}
+You are a molecular biology researcher. Solve the following biology research question independently.
+
+{question}
+
+Respond in exactly this format and keep it short:
+<answer>YOUR ANSWER</answer>
+CONFIDENCE: <probability between 0 and 1 that your answer is correct>
+JUSTIFICATION: <at most two sentences>
+\end{verbatim}
+
+\textbf{Call 1: Skeptic}
+\begin{verbatim}
+You are a skeptical scientific reviewer. Solve the following biology research question independently,
+looking especially for subtle experimental, biological or computational errors and traps.
+
+{question}
+
+Respond in exactly this format and keep it short:
+<answer>YOUR ANSWER</answer>
+CONFIDENCE: <probability between 0 and 1 that your answer is correct>
+JUSTIFICATION: <at most two sentences>
+\end{verbatim}
+
+\textbf{Call 2: Adjudicator}
+\begin{verbatim}
+Two scientists independently analysed the biology research question below. Adjudicate between their
+analyses (either or both may be wrong) and submit the final answer.
+
+{question}
+
+Analysis 1 (molecular biology researcher):
+{output from call 0}
+
+Analysis 2 (skeptical scientific reviewer):
+{output from call 1}
+
+Respond in exactly this format and keep it short:
+<answer>YOUR ANSWER</answer>
+CONFIDENCE: <probability between 0 and 1 that your answer is correct>
+JUSTIFICATION: <at most two sentences>
+\end{verbatim}
+
+\section{Answer Equivalence and Tie-Break Rules}
+
+\subsection{Multiple Choice}
+
+For all LAB-Bench categories (ProtocolQA, SeqQA, DbQA, LitQA2):
+Options are shuffled per question with a fixed seed.
+An answer is parsed as the letter (A, B, C, \ldots) from the tag \texttt{<answer>...<\!/answer>}.
+Two answers match if their letters are identical.
+
+\subsection{Numeric (SeqQA2)}
+
+For free-response numeric answers:
+An answer is parsed as a number from the \texttt{<answer>} tag.
+Two answers match if their relative difference is $\leq 1\%$: $|a - b| / \max(|a|, |b|) \leq 0.01$.
+
+\subsection{Voting in Strategy B (Independent$\times$3)}
+
+Given three answers and confidence scores:
+\begin{enumerate}
+  \item Cluster equivalent answers.
+  \item If any cluster has $\geq 2$ members, return the first answer in the largest cluster.
+  \item If all three are distinct, return the answer with highest confidence (earliest on tie).
+  \item If any answer is missing or unparseable, it does not vote.
+\end{enumerate}
+
+\section{Task Selection Details}
+
+\subsection{Datasets and Splits}
+
+\begin{itemize}
+  \item \textbf{LAB-Bench v1} (public Hugging Face): four multiple-choice categories.
+  \item \textbf{LABBench2} (commit c028ecdc): only SeqQA2 items with \texttt{ground\_truth == True} and unique ideal answers.
+  \item \textbf{Excluded:} \texttt{restriction\_counts} (1.5 MB input genome); items with invalid validators; prompts $>$ 6000 characters.
+\end{itemize}
+
+\subsection{Per-Category Split}
+
+Seed: 20260925. Shuffle order: deterministic per category. Allocation:
+\begin{itemize}
+  \item Pilot (2 items): used for saturation/floor checks, decision-only.
+  \item Main (30 items): primary analysis.
+  \item Flash-Lite subset (first 15 main items): auxiliary evaluation on Flash-Lite model.
+  \item Reserve: held out.
+\end{itemize}
+
+\subsection{Item Counts}
+
+\begin{table}[h]
+\centering
+\small
+\caption{Task counts by category and split.}
+\label{tab:taskcounts}
+\begin{tabularx}{\textwidth}{lcccc}
+\toprule
+\textbf{Category} & \textbf{Pilot} & \textbf{Main} & \textbf{Flash-Lite} & \textbf{Reserve} \\
+\midrule
+ProtocolQA & 2 & 30 & 15 & -- \\
+SeqQA & 2 & 30 & 15 & -- \\
+DbQA & 2 & 30 & 15 & -- \\
+LitQA2 & 2 & 30 & 15 & -- \\
+SeqQA2 & 2 & 30 & 15 & -- \\
+\midrule
+\textbf{Total} & 10 & 150 & 75 & -- \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\end{document}

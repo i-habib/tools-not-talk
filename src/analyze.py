@@ -62,7 +62,10 @@ def load_calls(model: str, split: str):
     calls = {}
     if p.exists():
         for line in p.open():
-            r = json.loads(line)
+            try:
+                r = json.loads(line)
+            except json.JSONDecodeError:
+                continue
             if not r.get("error"):
                 calls[(r["qid"], r["strategy"], r["step"])] = r
     return calls

@@ -40,7 +40,10 @@ async def main(args):
     cache = {}
     if log_path.exists():
         for line in log_path.open():
-            r = json.loads(line)
+            try:
+                r = json.loads(line)
+            except json.JSONDecodeError:  # torn last line after a crash; that call is simply redone
+                continue
             if not r.get("error"):
                 cache[(r["qid"], r["strategy"], r["step"])] = r
     (out_dir / "config.json").write_text(json.dumps(cfg.__dict__, indent=1))
@@ -51,6 +54,8 @@ async def main(args):
     stop = asyncio.Event()
 
     async def do_task(task):
+        strategy = None  # bound per loop iteration below; call() reads it at call time
+
         async def call(step, prompt, seed):
             key = (task["qid"], strategy, step)
             if key in cache:
@@ -64,7 +69,7 @@ async def main(args):
                 stop.set()
                 print(f"[quota] daily quota exhausted: {e}", flush=True)
                 raise Stop()
-            except Exception as e:  # logged; rerun retries it
+            except Exception as e:  # llm.py already retried transient errors; logged, rerun retries it
                 res, err = {"text": "", "usage": {"total_tokens": 0}}, repr(e)[:800]
             rec = {"qid": task["qid"], "category": task["category"], "strategy": strategy, "step": step,
                    "seed": seed, "model": cfg.model, "prompt": prompt, **res, "error": err,
