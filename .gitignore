@@ -1,0 +1,10 @@
+.venv/
+.env
+__pycache__/
+vendor/
+data/raw/
+data/labbench2_files/
+# Benchmark text must not be redistributed into crawlable repos (LAB-Bench canary); these contain question text.
+data/tasks.jsonl
+results/**/calls.jsonl
+.DS_Store
