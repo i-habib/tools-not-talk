@@ -117,3 +117,10 @@ spending those calls on independent samples plus a majority vote?
      - A partial `gpt-6-sol` low run (67 calls) was discarded unanalysed.
      - Main-study settings are unchanged: GPT-OSS low, Gemma thinking minimal (its only accepted level), Flash-Lite
        low.
+5. **Reasoning-effort arm (added 2026-09-26, 11:50 PT, exploratory).** The aim is to test whether one high-reasoning
+   call matches or beats 3-call orchestration at low reasoning.
+   - Runs: Direct only, on the same first 30 main questions, for GPT-OSS (`reasoning_effort=high`, Cerebras) and
+     Flash-Lite (`thinkingLevel=high`), each with an 8,192-token cap. The Codex models run all four strategies at
+     high effort.
+   - Gemma is excluded because the API accepts no thinking level other than `minimal`.
+   - Comparisons use generated tokens (output + reasoning), not input tokens.

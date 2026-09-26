@@ -57,6 +57,11 @@ MODELS = {
     "gpt-6-luna": ModelCfg("gpt-6-luna", "codex", "gpt-6-luna", rpm=30, tpm=10**9, extra={"effort": "low"}),
     "gpt-6-sol": ModelCfg("gpt-6-sol", "codex", "gpt-6-sol", rpm=30, tpm=10**9, extra={"effort": "low"}),
     "gpt-5.6-terra": ModelCfg("gpt-5.6-terra", "codex", "gpt-5.6-terra", rpm=30, tpm=10**9, extra={"effort": "low"}),
+    # "Think longer, not together" arm: single call (Direct) at high reasoning, same 30 questions (added 2026-09-26).
+    "gpt-oss-120b-high": ModelCfg("gpt-oss-120b-high", "cerebras", "gpt-oss-120b", rpm=5, tpm=28_000, rph=148,
+                                  max_tokens=8192, extra={"reasoning_effort": "high"}),
+    "flash-lite-high": ModelCfg("flash-lite-high", "gemini", "gemini-3.5-flash-lite", rpm=13, tpm=230_000,
+                                tpm_input_only=True, max_tokens=8192, extra={"thinkingConfig": {"thinkingLevel": "high"}}),
     # High-reasoning baseline for the frontier supplement (requested 2026-09-26); luna-low above is kept as ablation.
     "gpt-6-luna-high": ModelCfg("gpt-6-luna-high", "codex", "gpt-6-luna", rpm=30, tpm=10**9, extra={"effort": "high"}),
     "gpt-6-sol-high": ModelCfg("gpt-6-sol-high", "codex", "gpt-6-sol", rpm=30, tpm=10**9, extra={"effort": "high"}),
