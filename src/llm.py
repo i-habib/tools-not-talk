@@ -195,12 +195,30 @@ class QuotaExhausted(RuntimeError):
 CODEX_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "results", "_codex_empty")
 
 
+# No retrieval, no code execution, no sub-agents: the Codex harness must behave like a plain completion.
+CODEX_DISABLE = ["shell_tool", "unified_exec", "unified_exec_tty", "code_mode_host", "multi_agent", "apps",
+                 "browser_use", "browser_use_external", "computer_use", "in_app_browser", "image_generation",
+                 "plugins", "remote_plugin", "skill_search", "tool_suggest", "view_image", "sleep_tool"]
+
+
 async def _codex(c: ModelCfg, prompt: str) -> dict:
+    """Retry (up to 3x) any call in which the agent used a tool; if all attempts used tools, return the last one
+    with `tool_items` set so the analysis can flag it."""
+    for _ in range(3):
+        out = await _codex_once(c, prompt)
+        if not out["tool_items"]:
+            return out
+    return out
+
+
+async def _codex_once(c: ModelCfg, prompt: str) -> dict:
     import json as _json
     os.makedirs(CODEX_DIR, exist_ok=True)
+    disable = [a for f in CODEX_DISABLE for a in ("--disable", f)]
     proc = await asyncio.create_subprocess_exec(
         "codex", "exec", "--json", "--skip-git-repo-check", "--ephemeral", "-s", "read-only", "-C", CODEX_DIR,
-        "-m", c.model, "-c", f'model_reasoning_effort="{c.extra.get("effort", "low")}"', "-",
+        "-m", c.model, "-c", f'model_reasoning_effort="{c.extra.get("effort", "low")}"',
+        "-c", 'web_search="disabled"', "-c", "mcp_servers={}", *disable, "-",
         stdin=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
     try:
         out, err = await asyncio.wait_for(proc.communicate(prompt.encode()), timeout=600)
@@ -217,6 +235,8 @@ async def _codex(c: ModelCfg, prompt: str) -> dict:
             item = ev.get("item", {})
             if item.get("type") == "agent_message":
                 texts.append(item.get("text", ""))
+            elif item.get("type") == "error" and "code-mode host is disabled" in item.get("message", ""):
+                pass  # expected: code execution is disabled and fails closed
             elif item.get("type") != "reasoning":
                 other.append(item.get("type"))
         elif ev.get("type") == "turn.completed":

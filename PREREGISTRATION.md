@@ -107,3 +107,7 @@ spending those calls on independent samples plus a majority vote?
    - Caveats: the Codex agent harness adds its own system prompt; temperature and seed cannot be set; token counts
      include about 15K tokens of harness overhead per call, so they are excluded from efficiency analyses.
    - Reporting: accuracy and paired contrasts, clearly labelled as exploratory.
+   - Tools: web search, shell/code execution, sub-agents, plugins and MCP are disabled via Codex config flags. Any
+     call whose event stream still shows tool use is retried up to 3 times and flagged if it persists.
+   - A first 25-call attempt ran with Codex's default web search on; it was discarded unanalysed
+     (`results/_discarded/gpt-6-luna-websearch-enabled`).
