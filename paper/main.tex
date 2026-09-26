@@ -29,9 +29,9 @@
 Agentic systems for biology usually report gains over a single model call while spending several calls.
 We ask where such gains come from on objectively scored biology research tasks (LAB-Bench and LABBench2: protocol troubleshooting, sequence manipulation, database and literature questions).
 At a matched budget of three calls, we compare independent sampling with majority vote, sequential self-critique, and a two-scientist debate with an adjudicator, across three open and API models on 150 pre-registered questions scored without an LLM judge, and we contrast these with simply letting frontier models reason longer.
-No orchestration strategy beats majority voting (differences of \DDebateMinusVoteOSS{}, \DDebateMinusVoteGemma{} and \DDebateMinusVoteLite{} points for debate).
-Self-critique repairs about as many answers as it breaks.
-Extended reasoning moves frontier models onto the same plateau that orchestration reaches.
+Self-critique never beats majority voting and repairs about as many answers as it breaks.
+Debate helps only where the model cannot reason on its own: it adds \DDebateMinusVoteGemma{} points for Gemma with thinking disabled, but \DDebateMinusVoteOSS{} and \DDebateMinusVoteLite{} for models that reason, and nothing for frontier models at high reasoning effort, where all strategies tie.
+Letting a frontier model reason longer in one call reaches the same plateau as orchestration.
 The dominant factor is the question itself: across systems, question identity explains \ItemShareMain\% of the variance in correctness, while the choice of model, strategy and reasoning effort explains \ArmShareMain\%.
 On these tasks, additional inference, however organised, does not substitute for missing knowledge.
 \end{abstract}
@@ -46,9 +46,9 @@ Every orchestrated strategy gets exactly the budget of the voting baseline (thre
 We then ask a second question the agent literature rarely asks: does letting a strong model reason longer in a \emph{single} call reach the same point?
 
 \paragraph{Findings.}
-(1)~At matched budget, neither sequential critique nor multi-agent debate improves on majority voting, for any of three models.
+(1)~At matched budget, sequential critique never improves on majority voting, and multi-agent debate improves on it only for a model whose reasoning is switched off.
 (2)~Critique is a coin flip at the level of individual answers: it rescues and corrupts at similar rates, and it is most harmful on exact sequence manipulation.
-(3)~For frontier models, raising reasoning effort lifts a single call to the level that orchestration reaches, and stacking orchestration on top adds little.
+(3)~Debate behaves as a substitute for reasoning: for frontier models, raising reasoning effort lifts a single call to the level that debate reaches, and stacking orchestration on top adds nothing.
 (4)~Most strikingly, whether a system is right depends overwhelmingly on \emph{which question} it faces and barely on \emph{how} it spends inference: every system solves the same questions and fails the same questions (Fig.~\ref{fig:ceiling}).
 The remaining errors look like missing knowledge, not missing deliberation.
 
@@ -93,8 +93,9 @@ Flash-Lite & \NLite & \AccDirectLite & \AccVoteLite & \AccCritiqueLite & \AccDeb
 \end{tabular}
 \end{table}
 
-\paragraph{Orchestration does not beat voting.}
-Table~\ref{tab:main} shows that, for every model, the 95\% interval for \debate{} $-$ \vote{} includes zero (McNemar $p=\PDebateMinusVoteOSS$, $\PDebateMinusVoteGemma$, $\PDebateMinusVoteLite$).
+\paragraph{Orchestration beats voting only when the model cannot think.}
+\debate{} improves on \vote{} for Gemma, whose thinking is disabled ($\DDebateMinusVoteGemma$ points, 95\% CI [$\DDebateMinusVoteGemmaLo$, $\DDebateMinusVoteGemmaHi$], McNemar $p=\PDebateMinusVoteGemma$), and the gain survives excluding every question with a truncated call.
+For the two models that reason, the interval includes zero ($p=\PDebateMinusVoteOSS$ and $\PDebateMinusVoteLite$).
 \critique{} is never better than \vote{} ($\DCritiqueMinusVoteOSS$, $\DCritiqueMinusVoteGemma$, $\DCritiqueMinusVoteLite$ points).
 Voting itself barely improves on a single call ($\DVoteMinusDirectOSS$, $\DVoteMinusDirectGemma$, $\DVoteMinusDirectLite$), because the three samples usually agree: only \DisFracOSS\%, \DisFracGemma\% and \DisFracLite\% of questions produce any disagreement.
 
@@ -111,9 +112,10 @@ Protocol troubleshooting, a judgement task, is the one category where critique i
 \end{figure}
 
 \paragraph{Thinking longer reaches the same plateau.}
-For GPT-6 Luna, a single high-effort call (\TDirectHighLuna\%) matches low-effort \debate{} (\TDebateLowLuna\%) and exceeds a low-effort single call (\TDirectLowLuna\%).
+The same pattern holds within one model. At low effort (no reasoning tokens), GPT-6 Luna gains from debate (\TDebateLowLuna\% vs.\ \TVoteLowLuna\% for \vote), just like Gemma. A single high-effort call (\TDirectHighLuna\%) matches low-effort \debate{} (\TDebateLowLuna\%) and exceeds a low-effort single call (\TDirectLowLuna\%).
 Adding orchestration on top of high effort lifts Luna only to \TVoteHighLuna--\TDebateHighLuna\% while generating ${\sim}3\times$ more tokens (Fig.~\ref{fig:tvt}).
 For Flash-Lite, high thinking does not help at all (\TDirectHighLite\% vs.\ \TDirectLowLite\%) despite ${\sim}5\times$ the tokens.
+For GPT-6 Sol at high effort, all four strategies score exactly \TDirectHighSol\% while the three-call strategies generate ${\sim}3\times$ the tokens.
 Orchestration and extended reasoning are two routes to the same ceiling, not complementary gains.
 
 \begin{figure}[t]
