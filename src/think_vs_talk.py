@@ -233,7 +233,12 @@ def ceiling_analysis():
                 labels.append(f"{m} · {s}")
                 mat.append([rr[q][f"{s}_correct"] for q in common])
         M = np.array(mat, float)
-        out["main_models"] = {**variance_decomposition(M), "models": list(rows)}
+        import collections
+        cats = [TASKS[q]["category"] for q in common]
+        unsolved = collections.Counter(c for c, col in zip(cats, M.T) if col.sum() == 0)
+        out["main_models"] = {**variance_decomposition(M), "models": list(rows),
+                              "n_unsolved": int(sum(unsolved.values())), "unsolved_by_category": dict(unsolved),
+                              "n_all_solved": int((M.min(0) == 1).sum())}
         ceiling_figure(labels, M, [TASKS[q]["category"] for q in common], "fig_ceiling_main")
     (A.OUT / "ceiling.json").write_text(json.dumps(out, indent=1))
     print(json.dumps(out, indent=1))

@@ -29,6 +29,15 @@
   "models": [
    "gpt-oss-120b",
    "gemma-4-31b"
-  ]
+  ],
+  "n_unsolved": 24,
+  "unsolved_by_category": {
+   "SeqQA2": 7,
+   "ProtocolQA": 2,
+   "LitQA2": 8,
+   "DbQA": 6,
+   "SeqQA": 1
+  },
+  "n_all_solved": 24
  }
 }

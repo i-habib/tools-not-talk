@@ -81,6 +81,12 @@ def main():
         add(f"ArmShare{K}Hi", pct(v and v["arm_ci95"][1], 1))
         add(f"NArms{K}", v["n_arms"] if v else "??")
         add(f"NItems{K}", v["n_items"] if v else "??")
+    mm = ce.get("main_models", {})
+    u = mm.get("unsolved_by_category", {})
+    add("NUnsolved", mm.get("n_unsolved", "??"))
+    add("NAllSolved", mm.get("n_all_solved", "??"))
+    add("NUnsolvedRecall", u.get("LitQA2", 0) + u.get("DbQA", 0) if u else "??")
+    add("NUnsolvedSeqQAII", u.get("SeqQA2", 0) if u else "??")
     (PAPER / "numbers.tex").write_text("\n".join(L) + "\n")
 
     # prompt appendix, generated from the actual code

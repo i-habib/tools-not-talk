@@ -97,23 +97,22 @@ Flash-Lite & \NLite & \AccDirectLite & \AccVoteLite & \AccCritiqueLite & \AccDeb
 \debate{} improves on \vote{} for Gemma, whose thinking is disabled ($\DDebateMinusVoteGemma$ points, 95\% CI [$\DDebateMinusVoteGemmaLo$, $\DDebateMinusVoteGemmaHi$], McNemar $p=\PDebateMinusVoteGemma$), and the gain survives excluding every question with a truncated call.
 For the two models that reason, the interval includes zero ($p=\PDebateMinusVoteOSS$ and $\PDebateMinusVoteLite$).
 \critique{} is never better than \vote{} ($\DCritiqueMinusVoteOSS$, $\DCritiqueMinusVoteGemma$, $\DCritiqueMinusVoteLite$ points).
-Voting itself barely improves on a single call ($\DVoteMinusDirectOSS$, $\DVoteMinusDirectGemma$, $\DVoteMinusDirectLite$), because the three samples usually agree: only \DisFracOSS\%, \DisFracGemma\% and \DisFracLite\% of questions produce any disagreement.
+Voting itself barely improves on a single call ($\DVoteMinusDirectOSS$, $\DVoteMinusDirectGemma$, $\DVoteMinusDirectLite$ points), even though the three samples disagree on \DisFracOSS\%, \DisFracGemma\% and \DisFracLite\% of questions.
 
 \paragraph{Critique repairs about as often as it breaks.}
 Relative to the vote, \critique{} rescues \RescueCritiqueOSS\%, \RescueCritiqueGemma\% and \RescueCritiqueLite\% of wrong answers but corrupts \CorruptCritiqueOSS\%, \CorruptCritiqueGemma\% and \CorruptCritiqueLite\% of correct ones.
-The damage concentrates on exact sequence manipulation (SeqQA: \CritMinusVoteSeqQAOSS, \CritMinusVoteSeqQAGemma, \CritMinusVoteSeqQALite{} points vs.\ \vote), where a fluent but wrong critique talks the model out of a correct computation.
-Protocol troubleshooting, a judgement task, is the one category where critique is neutral or positive (\CritMinusVoteProtocolOSS, \CritMinusVoteProtocolGemma, \CritMinusVoteProtocolLite).
+For the two models that reason, the largest losses are on exact sequence manipulation (SeqQA: \CritMinusVoteSeqQAOSS{} and \CritMinusVoteSeqQALite{} points vs.\ \vote{} for GPT-OSS and Flash-Lite; \CritMinusVoteSeqQAGemma{} for Gemma), where a fluent but wrong critique talks the model out of a correct computation.
 
 \begin{figure}[t]
 \centering
 \figifexists[width=\linewidth]{figures/fig_think_vs_talk.pdf}
-\caption{Accuracy vs.\ generated tokens per question on the same 30 questions. Circles are low reasoning and stars are high reasoning; colour marks the strategy. Across a ${\sim}50\times$ range of generated tokens, all ways of spending inference land on a narrow per-model plateau.}
+\caption{Accuracy vs.\ generated tokens per question on the same 30 questions. Circles are low reasoning and stars are high reasoning; colour marks the strategy. Across nearly two orders of magnitude in generated tokens, all ways of spending inference land on a narrow per-model plateau.}
 \label{fig:tvt}
 \end{figure}
 
 \paragraph{Thinking longer reaches the same plateau.}
 The same pattern holds within one model. At low effort (no reasoning tokens), GPT-6 Luna gains from debate (\TDebateLowLuna\% vs.\ \TVoteLowLuna\% for \vote), just like Gemma. A single high-effort call (\TDirectHighLuna\%) matches low-effort \debate{} (\TDebateLowLuna\%) and exceeds a low-effort single call (\TDirectLowLuna\%).
-Adding orchestration on top of high effort lifts Luna only to \TVoteHighLuna--\TDebateHighLuna\% while generating ${\sim}3\times$ more tokens (Fig.~\ref{fig:tvt}).
+Adding orchestration on top of high effort lifts Luna only to \TVoteHighLuna\% while generating ${\sim}3\times$ more tokens (Fig.~\ref{fig:tvt}).
 For Flash-Lite, high thinking does not help at all (\TDirectHighLite\% vs.\ \TDirectLowLite\%) despite ${\sim}5\times$ the tokens.
 For GPT-6 Sol at high effort, all four strategies score exactly \TDirectHighSol\% while the three-call strategies generate ${\sim}3\times$ the tokens.
 Orchestration and extended reasoning are two routes to the same ceiling, not complementary gains.
@@ -128,10 +127,11 @@ Orchestration and extended reasoning are two routes to the same ceiling, not com
 \paragraph{The question, not the method, determines the outcome.}
 A two-way decomposition of the 0/1 correctness matrix (systems $\times$ questions) attributes \ItemShareMain\% of the variance to the question and \ArmShareMain\% to the system for the main models (Fig.~\ref{fig:ceiling}).
 Across all \NArmsThirty{} systems on the shared 30 questions, including frontier models at high reasoning, the split is \ItemShareThirty\% vs.\ \ArmShareThirty\%.
-The questions no system solves are dominated by literature and database recall (LitQA2, DbQA), which no amount of deliberation can supply without retrieval.
+Of the \NUnsolved{} questions that no main system solves, \NUnsolvedRecall{} require literature or database recall (LitQA2, DbQA) and \NUnsolvedSeqQAII{} are open-ended sequence computations (SeqQA2), failures that point to missing retrieval and code execution rather than missing deliberation.
 
 \section{Discussion}
-On objectively scored biology research tasks, the additional calls in agentic pipelines buy little beyond what independent sampling buys, and interaction can hurt when a confident critic overrides a correct computation.
+On objectively scored biology research tasks, the additional calls in agentic pipelines buy little beyond what independent sampling or a longer single call buys.
+Debate is the exception, and only when the model is not allowed to reason; once reasoning is on, its gain disappears, and critique can hurt when a confident critic overrides a correct computation.
 For strong models, the same plateau is reached more cheaply by letting one call reason longer.
 The practical implication for agent builders is to measure against a compute-matched vote \citep{kapoor2024agentsmatters} and to invest the budget in \emph{knowledge access} (retrieval, databases, code execution) rather than in more elaborate conversations between copies of the same model.
 Our results agree with compute-matched analyses of debate on general reasoning benchmarks \citep{wang2024rethinking,smit2024mad,choi2025debatevsvote,wu2025candebate} and with evidence that intrinsic self-correction is unreliable \citep{huang2023cannotcorrect}. We extend them to biology, to sequential critique, and to the trade-off between orchestration and reasoning effort.
