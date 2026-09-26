@@ -1,0 +1,14 @@
+{
+ "name": "gpt-6-luna",
+ "provider": "codex",
+ "model": "gpt-6-luna",
+ "rpm": 30,
+ "tpm": 1000000000,
+ "rph": 0,
+ "tpm_input_only": false,
+ "max_tokens": 2048,
+ "temperature": 0.6,
+ "extra": {
+  "effort": "low"
+ }
+}
