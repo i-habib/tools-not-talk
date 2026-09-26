@@ -32,11 +32,20 @@ async def main(args):
     if args.max_tokens:
         cfg.max_tokens = args.max_tokens
     tasks = data.load(args.split, flash_only=args.flash_only)
+    for k, v in {"ids_file": None, "exclude_file": None, "results_name": None, "log_name": "calls.jsonl"}.items():
+        if not hasattr(args, k):
+            setattr(args, k, v)
+    if args.ids_file:
+        keep = set(Path(args.ids_file).read_text().split())
+        tasks = [t for t in tasks if t["qid"] in keep]
+    if args.exclude_file and Path(args.exclude_file).exists():
+        drop = set(Path(args.exclude_file).read_text().split())
+        tasks = [t for t in tasks if t["qid"] not in drop]
     if args.limit:
         tasks = tasks[: args.limit]
-    out_dir = ROOT / "results" / cfg.name / args.split
+    out_dir = ROOT / "results" / (args.results_name or cfg.name) / args.split
     out_dir.mkdir(parents=True, exist_ok=True)
-    log_path = out_dir / "calls.jsonl"
+    log_path = out_dir / args.log_name
     cache = {}
     if log_path.exists():
         for line in log_path.open():
@@ -46,7 +55,7 @@ async def main(args):
                 continue
             if not r.get("error"):
                 cache[(r["qid"], r["strategy"], r["step"])] = r
-    (out_dir / "config.json").write_text(json.dumps(cfg.__dict__, indent=1))
+    (out_dir / args.log_name.replace("calls", "config").replace(".jsonl", ".json")).write_text(json.dumps(cfg.__dict__, indent=1))
 
     llm = LLM(cfg, concurrency=args.concurrency)
     log = log_path.open("a")
@@ -133,4 +142,8 @@ if __name__ == "__main__":
     ap.add_argument("--max-tokens", type=int, help="override per-call completion cap")
     ap.add_argument("--concurrency", type=int, default=8, help="max in-flight requests")
     ap.add_argument("--parallel-questions", type=int, default=4)
+    ap.add_argument("--results-name", help="results/<name>/ directory (default: model name)")
+    ap.add_argument("--log-name", default="calls.jsonl")
+    ap.add_argument("--ids-file", help="only run these question ids (one per line)")
+    ap.add_argument("--exclude-file", help="skip these question ids (one per line)")
     asyncio.run(main(ap.parse_args()))

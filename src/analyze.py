@@ -58,9 +58,8 @@ def unanimous(answers, task) -> bool:
 
 
 def load_calls(model: str, split: str):
-    p = ROOT / "results" / model / split / "calls.jsonl"
     calls = {}
-    if p.exists():
+    for p in sorted((ROOT / "results" / model / split).glob("calls*.jsonl")):
         for line in p.open():
             try:
                 r = json.loads(line)
@@ -85,6 +84,7 @@ def per_question(model: str, split: str, flash_only: bool = False):
         final = {"direct": ans("direct", 0), "indep3": vote(ind, ind_conf, t),
                  "critique3": ans("critique3", 2), "multi3": ans("multi3", 2)}
         row = {"qid": qid, "category": t["category"], "subtask": t["subtask"],
+               "provider": "groq" if c("direct", 0)["model"].startswith("openai/") else "primary",
                "unanimous": unanimous(ind, t),
                "indep_samples_correct": [S.is_correct(a, t) for a in ind],
                "critique_initial_correct": S.is_correct(ans("critique3", 0), t),
