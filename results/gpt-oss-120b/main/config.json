@@ -4,6 +4,7 @@
  "model": "gpt-oss-120b",
  "rpm": 5,
  "tpm": 28000,
+ "rph": 148,
  "tpm_input_only": false,
  "max_tokens": 2048,
  "temperature": 0.6,

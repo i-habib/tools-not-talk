@@ -102,7 +102,7 @@ class LLM:
     async def complete(self, prompt: str, seed: int) -> dict:
         est = len(prompt) // 3 + (0 if self.cfg.tpm_input_only else self.cfg.max_tokens)
         async with self.sem:
-            for attempt in range(8):
+            for attempt in range(40):
                 ev = await self.throttle.acquire(est)
                 t0 = time.monotonic()
                 try:
@@ -115,9 +115,11 @@ class LLM:
                 except httpx.HTTPStatusError as e:
                     code = e.response.status_code
                     body = e.response.text[:500]
-                    if code in (429, 500, 502, 503, 504) and attempt < 7:
+                    # rate limits (429) are retried patiently; server errors at most 8 times
+                    if (code == 429 and attempt < 39) or (code in (500, 502, 503, 504) and attempt < 7):
                         ra = e.response.headers.get("retry-after")
-                        delay = float(ra) if ra and re.fullmatch(r"[\d.]+", ra) else min(90, 5 * 2 ** attempt)
+                        # cap: a long retry-after (hourly window) must not park the worker once capacity frees up
+                        delay = min(float(ra), 300) if ra and re.fullmatch(r"[\d.]+", ra) else min(90, 5 * 2 ** min(attempt, 4))
                         if code == 429 and "per day" in body.lower():
                             raise QuotaExhausted(body) from e
                         await asyncio.sleep(delay + random.random())
