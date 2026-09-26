@@ -1,0 +1,14 @@
+{
+ "name": "gpt-oss-120b-groq",
+ "provider": "groq",
+ "model": "openai/gpt-oss-120b",
+ "rpm": 28,
+ "tpm": 7500,
+ "rph": 0,
+ "tpm_input_only": false,
+ "max_tokens": 2048,
+ "temperature": 0.6,
+ "extra": {
+  "reasoning_effort": "low"
+ }
+}

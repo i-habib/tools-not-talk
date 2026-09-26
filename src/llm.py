@@ -52,6 +52,11 @@ MODELS = {
                             extra={"thinkingConfig": {"thinkingLevel": "minimal"}}),
     "flash-lite": ModelCfg("flash-lite", "gemini", "gemini-3.5-flash-lite", rpm=13, tpm=230_000, tpm_input_only=True,
                            extra={"thinkingConfig": {"thinkingLevel": "low"}}),
+    # Exploratory supplement (added after freeze): frontier GPT models via the Codex CLI (ChatGPT account).
+    # Agent harness adds its own system prompt; no temperature/seed control; read-only sandbox in an empty dir.
+    "gpt-6-luna": ModelCfg("gpt-6-luna", "codex", "gpt-6-luna", rpm=30, tpm=10**9, extra={"effort": "low"}),
+    "gpt-6-sol": ModelCfg("gpt-6-sol", "codex", "gpt-6-sol", rpm=30, tpm=10**9, extra={"effort": "low"}),
+    "gpt-5.6-terra": ModelCfg("gpt-5.6-terra", "codex", "gpt-5.6-terra", rpm=30, tpm=10**9, extra={"effort": "low"}),
     "mock": ModelCfg("mock", "mock", "mock", rpm=100_000, tpm=10**9),
 }
 
@@ -136,6 +141,8 @@ class LLM:
         c = self.cfg
         if c.provider == "mock":
             return _mock(prompt, seed)
+        if c.provider == "codex":
+            return await _codex(c, prompt)
         if c.provider in ENDPOINTS:
             url, env = ENDPOINTS[c.provider]
             body = {"model": c.model, "messages": [{"role": "user", "content": prompt}],
@@ -183,6 +190,49 @@ class LLM:
 
 class QuotaExhausted(RuntimeError):
     pass
+
+
+CODEX_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "results", "_codex_empty")
+
+
+async def _codex(c: ModelCfg, prompt: str) -> dict:
+    import json as _json
+    os.makedirs(CODEX_DIR, exist_ok=True)
+    proc = await asyncio.create_subprocess_exec(
+        "codex", "exec", "--json", "--skip-git-repo-check", "--ephemeral", "-s", "read-only", "-C", CODEX_DIR,
+        "-m", c.model, "-c", f'model_reasoning_effort="{c.extra.get("effort", "low")}"', "-",
+        stdin=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+    try:
+        out, err = await asyncio.wait_for(proc.communicate(prompt.encode()), timeout=600)
+    except asyncio.TimeoutError:
+        proc.kill()
+        raise httpx.TimeoutException("codex exec timed out")
+    texts, usage, other, errors = [], {}, [], []
+    for line in out.decode(errors="replace").splitlines():
+        try:
+            ev = _json.loads(line)
+        except ValueError:
+            continue
+        if ev.get("type") == "item.completed":
+            item = ev.get("item", {})
+            if item.get("type") == "agent_message":
+                texts.append(item.get("text", ""))
+            elif item.get("type") != "reasoning":
+                other.append(item.get("type"))
+        elif ev.get("type") == "turn.completed":
+            usage = ev.get("usage", {})
+        elif ev.get("type") in ("error", "turn.failed"):
+            errors.append(str(ev)[:400])
+    blob = " ".join(errors) + err.decode(errors="replace")[-600:]
+    if not texts:
+        low = blob.lower()
+        if "usage limit" in low or "rate limit" in low or "quota" in low:
+            raise QuotaExhausted(blob[:400])
+        raise RuntimeError(f"codex exec produced no message: {blob[:400]}")
+    n_in, n_out = usage.get("input_tokens", 0), usage.get("output_tokens", 0) + usage.get("reasoning_output_tokens", 0)
+    return {"text": texts[-1], "reasoning": "", "finish_reason": "stop", "tool_items": other,
+            "usage": {"input_tokens": n_in, "output_tokens": n_out, "reasoning_tokens": usage.get("reasoning_output_tokens"),
+                      "total_tokens": n_in + n_out}, "raw_usage": usage}
 
 
 def _mock(prompt: str, seed: int) -> dict:

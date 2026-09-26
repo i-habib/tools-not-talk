@@ -100,3 +100,10 @@ spending those calls on independent samples plus a majority vote?
    - The provider is recorded per question, and a sensitivity analysis excluding Groq questions is reported.
 3. **Downtime.** The host machine slept from 00:40 to about 10:40 PT on 2026-09-26. The runs paused and then
    resumed; no data were lost.
+4. **Exploratory frontier supplement (added 2026-09-26, after the freeze; not part of the primary analysis).**
+   - Models: `gpt-6-luna`, `gpt-6-sol` and `gpt-5.6-terra`, run through the Codex CLI with a ChatGPT account.
+   - Tasks: the first 30 main questions in run order (6 per category), selected by position and not by outcome.
+   - Settings: all four strategies, identical prompts, reasoning effort low.
+   - Caveats: the Codex agent harness adds its own system prompt; temperature and seed cannot be set; token counts
+     include about 15K tokens of harness overhead per call, so they are excluded from efficiency analyses.
+   - Reporting: accuracy and paired contrasts, clearly labelled as exploratory.
