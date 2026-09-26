@@ -127,6 +127,24 @@
    "p": 1.0
   }
  },
+ "GPT-6 Sol": {
+  "direct@high": {
+   "acc": 0.7,
+   "gen_tokens": 3227.733333333333
+  },
+  "indep3@high": {
+   "acc": 0.7,
+   "gen_tokens": 8753.1
+  },
+  "indep3@high-direct@high": {
+   "delta": 0.0,
+   "ci95": [
+    -0.1,
+    0.1
+   ],
+   "p": 1.0
+  }
+ },
  "GPT-OSS-120B": {
   "direct@low": {
    "acc": 0.5,

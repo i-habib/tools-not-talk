@@ -30,6 +30,13 @@
 - critique3@high − Direct@high: +0.033 [-0.100, +0.167], p=1.000
 - multi3@high − Direct@high: +0.033 [-0.067, +0.167], p=1.000
 
+## GPT-6 Sol
+| arm | acc | generated tok/q |
+|---|---|---|
+| direct@high | 0.700 | 3228 |
+| indep3@high | 0.700 | 8753 |
+- indep3@high − Direct@high: +0.000 [-0.100, +0.100], p=1.000
+
 ## GPT-OSS-120B
 | arm | acc | generated tok/q |
 |---|---|---|

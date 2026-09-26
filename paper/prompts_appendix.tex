@@ -1,0 +1,98 @@
+\paragraph{Direct / Independent$\times$3 / Critique call 1 (solve)}
+\begin{footnotesize}\begin{verbatim}
+Solve the following biology research question.
+
+{QUESTION}
+
+{ANSWER INSTRUCTION}
+
+Respond in exactly this format and keep it short:
+<answer>YOUR ANSWER</answer>
+CONFIDENCE: <probability between 0 and 1 that your answer is correct>
+JUSTIFICATION: <at most two sentences>
+\end{verbatim}\end{footnotesize}
+
+\paragraph{Critique call 2 (critique)}
+\begin{footnotesize}\begin{verbatim}
+Below are a biology research question and a proposed solution. Act as a critical reviewer: identify any
+scientific, computational or reasoning error in the solution. If you think the answer is wrong, say which
+answer you believe is correct and why. If you find no error, say so.
+
+{QUESTION}
+
+Proposed solution:
+{CALL 1 OUTPUT}
+
+Respond with at most four sentences, starting with "CRITIQUE:".
+\end{verbatim}\end{footnotesize}
+
+\paragraph{Critique call 3 (revise)}
+\begin{footnotesize}\begin{verbatim}
+Below are a biology research question, a first attempt at solving it, and a reviewer's critique of that
+attempt. Either may contain mistakes. Considering both, produce the final answer.
+
+{QUESTION}
+
+First attempt:
+{CALL 1 OUTPUT}
+
+Reviewer's critique:
+{CALL 2 OUTPUT}
+
+{ANSWER INSTRUCTION}
+
+Respond in exactly this format and keep it short:
+<answer>YOUR ANSWER</answer>
+CONFIDENCE: <probability between 0 and 1 that your answer is correct>
+JUSTIFICATION: <at most two sentences>
+\end{verbatim}\end{footnotesize}
+
+\paragraph{Debate call 1 (researcher)}
+\begin{footnotesize}\begin{verbatim}
+You are a molecular biology researcher. Solve the following biology research question independently.
+
+{QUESTION}
+
+{ANSWER INSTRUCTION}
+
+Respond in exactly this format and keep it short:
+<answer>YOUR ANSWER</answer>
+CONFIDENCE: <probability between 0 and 1 that your answer is correct>
+JUSTIFICATION: <at most two sentences>
+\end{verbatim}\end{footnotesize}
+
+\paragraph{Debate call 2 (skeptic)}
+\begin{footnotesize}\begin{verbatim}
+You are a skeptical scientific reviewer. Solve the following biology research question independently, looking
+especially for subtle experimental, biological or computational errors and traps.
+
+{QUESTION}
+
+{ANSWER INSTRUCTION}
+
+Respond in exactly this format and keep it short:
+<answer>YOUR ANSWER</answer>
+CONFIDENCE: <probability between 0 and 1 that your answer is correct>
+JUSTIFICATION: <at most two sentences>
+\end{verbatim}\end{footnotesize}
+
+\paragraph{Debate call 3 (adjudicator)}
+\begin{footnotesize}\begin{verbatim}
+Two scientists independently analysed the biology research question below. Adjudicate between their analyses
+(either or both may be wrong) and submit the final answer.
+
+{QUESTION}
+
+Analysis 1 (molecular biology researcher):
+{CALL 1 OUTPUT}
+
+Analysis 2 (skeptical scientific reviewer):
+{CALL 2 OUTPUT}
+
+{ANSWER INSTRUCTION}
+
+Respond in exactly this format and keep it short:
+<answer>YOUR ANSWER</answer>
+CONFIDENCE: <probability between 0 and 1 that your answer is correct>
+JUSTIFICATION: <at most two sentences>
+\end{verbatim}\end{footnotesize}

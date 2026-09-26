@@ -16,3 +16,8 @@ paper/*.bbl
 paper/*.blg
 results/_discarded/
 results/_codex_empty/
+paper/*.aux
+paper/*.log
+paper/*.out
+paper/*.bbl
+paper/*.blg

@@ -1,1 +1,16 @@
-% No models to display
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lccccccccc}
+\toprule
+Contrast vs Indep & \multicolumn{3}{c}{Gemma} & \multicolumn{3}{c}{Lite} & \multicolumn{3}{c}{OSS} \\
+ & $\Delta$ & 95\% CI & McNemar $p$ & $\Delta$ & 95\% CI & McNemar $p$ & $\Delta$ & 95\% CI & McNemar $p$ \\
+\midrule
+\textit{Two scientists + adjudicator v} & \DeltaMultiIndepGemma & [\DeltaCILoMultiIndepGemma, \DeltaCIHiMultiIndepGemma] & \McNemarPMultiIndepGemma & \DeltaMultiIndepLite & [\DeltaCILoMultiIndepLite, \DeltaCIHiMultiIndepLite] & \McNemarPMultiIndepLite & \DeltaMultiIndepOSS & [\DeltaCILoMultiIndepOSS, \DeltaCIHiMultiIndepOSS] & \McNemarPMultiIndepOSS \\
+\textit{Solve→Critique→Revise vs Indep} & \DeltaCritiqueIndepGemma & [\DeltaCILoCritiqueIndepGemma, \DeltaCIHiCritiqueIndepGemma] & \McNemarPCritiqueIndepGemma & \DeltaCritiqueIndepLite & [\DeltaCILoCritiqueIndepLite, \DeltaCIHiCritiqueIndepLite] & \McNemarPCritiqueIndepLite & \DeltaCritiqueIndepOSS & [\DeltaCILoCritiqueIndepOSS, \DeltaCIHiCritiqueIndepOSS] & \McNemarPCritiqueIndepOSS \\
+\textit{Direct (1 call) vs Independent} & \DeltaDirectIndepGemma & [\DeltaCILoDirectIndepGemma, \DeltaCIHiDirectIndepGemma] & \McNemarPDirectIndepGemma & \DeltaDirectIndepLite & [\DeltaCILoDirectIndepLite, \DeltaCIHiDirectIndepLite] & \McNemarPDirectIndepLite & \DeltaDirectIndepOSS & [\DeltaCILoDirectIndepOSS, \DeltaCIHiDirectIndepOSS] & \McNemarPDirectIndepOSS \\
+\bottomrule
+\end{tabular}
+\caption{Paired contrasts vs Independent×3 (vote). $\Delta$ = difference in accuracy (pp).}
+\label{tab:contrasts}
+\end{table}

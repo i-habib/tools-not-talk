@@ -1,1 +1,17 @@
-% No models to display
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lcccccc}
+\toprule
+Strategy & \multicolumn{2}{c}{Gemma} & \multicolumn{2}{c}{Lite} & \multicolumn{2}{c}{OSS} \\
+ & Acc [95\% CI] & Tok/Q & Acc [95\% CI] & Tok/Q & Acc [95\% CI] & Tok/Q \\
+\midrule
+\textit{Direct (1 call)} & \AccDirectGemma\% [\AccCILoDirectGemma\%--\AccCIHiDirectGemma\%] & \TokDirectGemma & \AccDirectLite\% [\AccCILoDirectLite\%--\AccCIHiDirectLite\%] & \TokDirectLite & \AccDirectOSS\% [\AccCILoDirectOSS\%--\AccCIHiDirectOSS\%] & \TokDirectOSS \\
+\textit{Independent×3 (vote)} & \AccIndepGemma\% [\AccCILoIndepGemma\%--\AccCIHiIndepGemma\%] & \TokIndepGemma & \AccIndepLite\% [\AccCILoIndepLite\%--\AccCIHiIndepLite\%] & \TokIndepLite & \AccIndepOSS\% [\AccCILoIndepOSS\%--\AccCIHiIndepOSS\%] & \TokIndepOSS \\
+\textit{Solve→Critique→Revise} & \AccCritiqueGemma\% [\AccCILoCritiqueGemma\%--\AccCIHiCritiqueGemma\%] & \TokCritiqueGemma & \AccCritiqueLite\% [\AccCILoCritiqueLite\%--\AccCIHiCritiqueLite\%] & \TokCritiqueLite & \AccCritiqueOSS\% [\AccCILoCritiqueOSS\%--\AccCIHiCritiqueOSS\%] & \TokCritiqueOSS \\
+\textit{Two scientists + adjudicator} & \AccMultiGemma\% [\AccCILoMultiGemma\%--\AccCIHiMultiGemma\%] & \TokMultiGemma & \AccMultiLite\% [\AccCILoMultiLite\%--\AccCIHiMultiLite\%] & \TokMultiLite & \AccMultiOSS\% [\AccCILoMultiOSS\%--\AccCIHiMultiOSS\%] & \TokMultiOSS \\
+\bottomrule
+\end{tabular}
+\caption{Accuracy and token usage by strategy and model.}
+\label{tab:results}
+\end{table}

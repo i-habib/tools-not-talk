@@ -1,1 +1,18 @@
-% No models to display
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lccccccccccccccc}
+\toprule
+Category & \multicolumn{5}{c}{Gemma} & \multicolumn{5}{c}{Lite} & \multicolumn{5}{c}{OSS} \\
+ & D & I & C & M & Disagree & D & I & C & M & Disagree & D & I & C & M & Disagree \\
+\midrule
+DbQA & 53.8 & 50.0 & 34.6 & 53.8 & 38.5 & 40.0 & 40.0 & 40.0 & 33.3 & 26.7 & 33.3 & 38.1 & 42.9 & 28.6 & 38.1 \\
+LitQA2 & 28.0 & 28.0 & 32.0 & 32.0 & 48.0 & 60.0 & 53.3 & 53.3 & 46.7 & 26.7 & 23.8 & 28.6 & 47.6 & 42.9 & 52.4 \\
+ProtocolQA & 53.8 & 53.8 & 57.7 & 65.4 & 23.1 & 66.7 & 80.0 & 86.7 & 73.3 & 26.7 & 61.9 & 52.4 & 47.6 & 52.4 & 28.6 \\
+SeqQA & 61.5 & 61.5 & 61.5 & 76.9 & 42.3 & 73.3 & 73.3 & 53.3 & 66.7 & 13.3 & 57.1 & 61.9 & 38.1 & 57.1 & 33.3 \\
+SeqQA2 & 45.8 & 54.2 & 41.7 & 54.2 & 62.5 & 66.7 & 66.7 & 46.7 & 66.7 & 40.0 & 52.4 & 57.1 & 47.6 & 61.9 & 33.3 \\
+\bottomrule
+\end{tabular}
+\caption{Per-category accuracy (D=Direct, I=Independent×3, C=Critique, M=Multi). Numbers are percentages.}
+\label{tab:by-category}
+\end{table}
