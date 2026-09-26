@@ -14,30 +14,30 @@
   "n_items": 30
  },
  "main_models": {
-  "item_share": 0.566706169647346,
-  "arm_share": 0.006392300509947567,
+  "item_share": 0.560986118732598,
+  "arm_share": 0.006206938601304803,
   "item_ci95": [
-   0.4911871692577837,
-   0.6379272171442688
+   0.4915234896088877,
+   0.6257903375428696
   ],
   "arm_ci95": [
-   0.002804055457971424,
-   0.02194918338408652
+   0.0029896592799935617,
+   0.02048428089307136
   ],
   "n_arms": 8,
-  "n_items": 118,
+  "n_items": 124,
   "models": [
    "gpt-oss-120b",
    "gemma-4-31b"
   ],
-  "n_unsolved": 24,
+  "n_unsolved": 25,
   "unsolved_by_category": {
    "SeqQA2": 7,
    "ProtocolQA": 2,
+   "DbQA": 7,
    "LitQA2": 8,
-   "DbQA": 6,
    "SeqQA": 1
   },
-  "n_all_solved": 24
+  "n_all_solved": 25
  }
 }

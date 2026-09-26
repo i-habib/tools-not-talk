@@ -1,0 +1,14 @@
+{
+ "name": "gpt-oss-120b-ollama-high",
+ "provider": "ollama",
+ "model": "gpt-oss:120b-cloud",
+ "rpm": 30,
+ "tpm": 1000000000,
+ "rph": 0,
+ "tpm_input_only": false,
+ "max_tokens": 16384,
+ "temperature": 0.6,
+ "extra": {
+  "think": "high"
+ }
+}

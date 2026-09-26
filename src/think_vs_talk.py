@@ -27,7 +27,7 @@ FAMILIES = {
     "GPT-6 Luna": ("gpt-6-luna", "gpt-6-luna-high"),
     "GPT-6 Sol": (None, "gpt-6-sol-high"),
     "GPT-5.6 Terra": (None, "gpt-5.6-terra-high"),
-    "GPT-OSS-120B": ("gpt-oss-120b", None),
+    "GPT-OSS-120B": ("gpt-oss-120b", "gpt-oss-120b-ollama-high"),
     "Gemma 4 31B": ("gemma-4-31b", None),
 }
 Q30 = [t["qid"] for t in data.load("main")[:30]]
@@ -131,7 +131,7 @@ def figure(table):
                        marker="o" if eff == "low" else "*", s=28 if eff == "low" else 110,
                        edgecolor="k" if eff == "high" else "none", linewidth=0.6)
         ax.set_xscale("log")
-        ax.set_xlim(80, 15000)
+        ax.set_xlim(80, 40000)
         ax.xaxis.set_major_locator(FixedLocator([100, 1000, 10000]))
         ax.xaxis.set_major_formatter(FuncFormatter(lambda x, _: {100: "100", 1000: "1k", 10000: "10k"}.get(int(x), "")))
         ax.xaxis.set_minor_locator(NullLocator())
