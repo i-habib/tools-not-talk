@@ -1,15 +1,15 @@
-\documentclass[10pt]{article}
+\documentclass{article}
+\usepackage[dblblindworkshop,nonatbib]{neurips_2026}
+\workshoptitle{Agentic AI for Biological Discovery (AgenticLS)}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
-\usepackage{mathptmx}
-\usepackage[margin=1in]{geometry}
 \usepackage[numbers,sort&compress]{natbib}
 \usepackage{graphicx}
 \usepackage{amsmath,amssymb}
 \usepackage{booktabs}
 \usepackage{xcolor}
 \usepackage[font=small,labelfont=bf]{caption}
-\usepackage[hidelinks]{hyperref}
+\usepackage{hyperref}
 
 \newcommand{\figifexists}[2][]{\IfFileExists{#2}{\includegraphics[#1]{#2}}{\fbox{\parbox{2in}{\centering\small Missing:\\\texttt{\detokenize{#2}}}}}}
 \input{numbers.tex}
@@ -19,8 +19,7 @@
 \newcommand{\direct}{\textsc{Direct}}
 
 \title{Inference Can't Buy Knowledge: Agent Orchestration and Extended Reasoning\\Hit the Same Ceiling on Biology Research Tasks}
-\author{Anonymous Authors}
-\date{}
+\author{Anonymous Author(s)}
 
 \begin{document}
 \maketitle
@@ -41,6 +40,7 @@ LLM agents now plan experiments, analyse data and generate hypotheses in chemist
 Their gains are typically reported against a single-call baseline, although the agent makes many calls.
 Because repeated sampling with a vote already improves accuracy \citep{wang2022selfconsistency,li2024moreagents,brown2024monkeys}, such comparisons conflate \emph{what the interaction adds} with \emph{how much inference was spent} \citep{kapoor2024agentsmatters}.
 
+For anyone building life-science agents, this is a design question as much as an evaluation one: should the budget go into richer orchestration (critics, debating scientists) or somewhere else?
 We run a small, controlled test of this confound on biology research questions with deterministic answers.
 Every orchestrated strategy gets exactly the budget of the voting baseline (three calls, same model, same prompts, same decoding).
 We then ask a second question the agent literature rarely asks: does letting a strong model reason longer in a \emph{single} call reach the same point?
@@ -75,7 +75,7 @@ For the reasoning-effort analysis we additionally run GPT-6 Luna, GPT-6 Sol and 
 \paragraph{Pre-registration.}
 Task IDs, prompts, decoding, hypotheses and the analysis script were committed before the main run.
 The primary contrast is \debate{} $-$ \vote{}, tested with a paired bootstrap over questions (10{,}000 resamples) and an exact McNemar test.
-Post-freeze deviations are logged in the repository. They are rate-limit workarounds, a second inference provider for 22 GPT-OSS questions (each question served entirely by one provider), and the exploratory reasoning-effort arm.
+Post-freeze deviations are listed in App.~\ref{app:deviations}: rate-limit workarounds, a second inference provider for 22 GPT-OSS questions (each question served entirely by one provider), and the exploratory reasoning-effort arm.
 
 \section{Results}
 \begin{table}[t]
@@ -129,11 +129,10 @@ A two-way decomposition of the 0/1 correctness matrix (systems $\times$ question
 Across all \NArmsThirty{} systems on the shared 30 questions, including frontier models at high reasoning, the split is \ItemShareThirty\% vs.\ \ArmShareThirty\%.
 Of the \NUnsolved{} questions that no main system solves, \NUnsolvedRecall{} require literature or database recall (LitQA2, DbQA) and \NUnsolvedSeqQAII{} are open-ended sequence computations (SeqQA2), failures that point to missing retrieval and code execution rather than missing deliberation.
 
-\section{Discussion}
-On objectively scored biology research tasks, the additional calls in agentic pipelines buy little beyond what independent sampling or a longer single call buys.
-Debate is the exception, and only when the model is not allowed to reason; once reasoning is on, its gain disappears, and critique can hurt when a confident critic overrides a correct computation.
-Longer reasoning is not a reliable substitute either: it helped only a model that otherwise did not reason.
-The practical implication for agent builders is to measure against a compute-matched vote \citep{kapoor2024agentsmatters} and to invest the budget in \emph{knowledge access} (retrieval, databases, code execution) rather than in more elaborate conversations between copies of the same model.
+\section{Implications for building life-science agents}
+\textbf{Benchmark against a compute-matched vote.} A multi-call agent should beat independent sampling with the same number of calls, not a single call \citep{kapoor2024agentsmatters}. Most of our orchestration gains vanish under that baseline.
+\textbf{Spend the harness budget on tools, not talk.} The questions every system fails need literature or database recall, or exact sequence computation. Those are the failures that retrieval, database APIs and code execution address, and that extra conversations between copies of the same model cannot.
+\textbf{A stronger generalist does not remove the ceiling.} Frontier models at high reasoning effort plateau at the same per-question boundary. This suggests that on knowledge-bound biology tasks, access to specialised tools and data matters more than a stronger or longer-thinking backbone.
 Our results agree with compute-matched analyses of debate on general reasoning benchmarks \citep{wang2024rethinking,smit2024mad,choi2025debatevsvote,wu2025candebate} and with evidence that intrinsic self-correction is unreliable \citep{huang2023cannotcorrect}. We extend them to biology, to sequential critique, and to the trade-off between orchestration and reasoning effort.
 
 \paragraph{Limitations.}
@@ -143,6 +142,11 @@ Frontier models were run through the Codex CLI, which adds its own system prompt
 Gemma could only run with thinking off.
 One prompt set per strategy was used, and 150 questions give limited power for effects under ${\sim}10$ points.
 
+\section{Conclusion}
+On objectively scored biology research tasks, how a model spends extra inference (voting, self-critique, multi-agent debate or longer reasoning) barely changes which questions it gets right: question identity explains \ItemShareMain\% of the variance in correctness and the choice of system \ArmShareMain\%.
+Debate helps only a model that cannot otherwise reason, and critique never helps.
+For builders of life-science agents, the lever is knowledge access through retrieval, databases and computational tools, not more elaborate conversations between copies of the same model.
+
 \bibliographystyle{plainnat}
 \bibliography{refs}
 
@@ -151,6 +155,12 @@ One prompt set per strategy was used, and 150 questions give limited power for e
 All prompts are single user messages. \texttt{\{QUESTION\}} is the question (with protocol, options or injected files) and \texttt{\{ANSWER INSTRUCTION\}} is the format line for multiple choice or the official SeqQA2 suffix.
 \refstepcounter{figure}\label{fig:strategies}
 \input{prompts_appendix.tex}
+
+\section{Pre-registration deviations}\label{app:deviations}
+All task IDs, prompts, decoding settings and the primary analysis were frozen after a 10-question pilot and before any main-set call. Changes made after the freeze:
+(i)~throttle and retry fixes for an undocumented 150 requests/hour provider limit (no completed call was re-run);
+(ii)~22 GPT-OSS questions served in full by a second provider of the same model (identical prompts, seeds and cap; excluding them leaves \debate{} $-$ \vote{} at $\DDebateMinusVoteOSSNoGroq$), with partially served questions discarded and re-run on the primary provider;
+(iii)~the exploratory reasoning-effort arm on the first 30 questions, including frontier models served through the Codex CLI with web search, code execution and sub-agents disabled (a first attempt with web search enabled was discarded unanalysed), and GPT-OSS at high effort on a second host.
 
 \section{Additional results}
 \input{appendix_category_table.tex}

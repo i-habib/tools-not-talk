@@ -230,7 +230,7 @@ def ceiling_analysis():
         labels, mat = [], []
         for m, rr in rows.items():
             for s in A.STRATEGIES:
-                labels.append(f"{m} · {s}")
+                labels.append(f"{ {'gpt-oss-120b': 'GPT-OSS-120B', 'gemma-4-31b': 'Gemma 4 31B'}.get(m, m)} · {s}")
                 mat.append([rr[q][f"{s}_correct"] for q in common])
         M = np.array(mat, float)
         import collections
