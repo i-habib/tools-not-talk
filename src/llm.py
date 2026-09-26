@@ -29,6 +29,7 @@ class ModelCfg:
     model: str                # provider model id
     rpm: int
     tpm: int
+    rph: int = 0                  # requests per hour (0 = none)
     tpm_input_only: bool = False  # Gemini API quotas count input tokens only
     max_tokens: int = 2048    # completion cap per call (includes hidden reasoning tokens)
     temperature: float = 0.6
@@ -37,8 +38,9 @@ class ModelCfg:
 
 MODELS = {
     # Cerebras free tier (inference-docs.cerebras.ai/support/rate-limits, 2026-09-25):
-    # gpt-oss-120b 5 RPM, 30K uncached TPM, 90K total TPM, 1M TPH, 1M TPD (token-bucket replenishment).
-    "gpt-oss-120b": ModelCfg("gpt-oss-120b", "cerebras", "gpt-oss-120b", rpm=5, tpm=28_000,
+    # gpt-oss-120b 5 RPM, 30K uncached TPM, 90K total TPM, 1M TPH, 1M TPD; response headers additionally show
+    # 150 requests/hour and 2,400 requests/day (x-ratelimit-limit-requests-hour/-day).
+    "gpt-oss-120b": ModelCfg("gpt-oss-120b", "cerebras", "gpt-oss-120b", rpm=5, tpm=28_000, rph=148,
                              extra={"reasoning_effort": "low"}),
     "gpt-oss-120b-groq": ModelCfg("gpt-oss-120b-groq", "groq", "openai/gpt-oss-120b", rpm=28, tpm=7_500,
                                   extra={"reasoning_effort": "low"}),
@@ -62,9 +64,10 @@ ENDPOINTS = {
 class Throttle:
     """Sliding 60 s window over requests and (estimated, then actual) tokens."""
 
-    def __init__(self, rpm: int, tpm: int):
-        self.rpm, self.tpm = rpm, tpm
+    def __init__(self, rpm: int, tpm: int, rph: int = 0):
+        self.rpm, self.tpm, self.rph = rpm, tpm, rph
         self.events: deque[list] = deque()  # [timestamp, tokens]
+        self.hour: deque[float] = deque()
         self.lock = asyncio.Lock()
 
     async def acquire(self, est_tokens: int) -> list:
@@ -73,19 +76,26 @@ class Throttle:
                 now = time.monotonic()
                 while self.events and now - self.events[0][0] > 60:
                     self.events.popleft()
+                while self.hour and now - self.hour[0] > 3600:
+                    self.hour.popleft()
                 used = sum(e[1] for e in self.events)
-                if len(self.events) < self.rpm and used + est_tokens <= self.tpm:
+                hour_ok = not self.rph or len(self.hour) < self.rph
+                if len(self.events) < self.rpm and used + est_tokens <= self.tpm and hour_ok:
                     ev = [now, est_tokens]
                     self.events.append(ev)
+                    self.hour.append(now)
                     return ev
-                wait = 60 - (now - self.events[0][0]) + 0.05 if self.events else 1
+                if not hour_ok:
+                    wait = 3600 - (now - self.hour[0]) + 0.05
+                else:
+                    wait = 60 - (now - self.events[0][0]) + 0.05 if self.events else 1
             await asyncio.sleep(min(max(wait, 0.2), 5))
 
 
 class LLM:
     def __init__(self, cfg: ModelCfg, concurrency: int = 8):
         self.cfg = cfg
-        self.throttle = Throttle(cfg.rpm, cfg.tpm)
+        self.throttle = Throttle(cfg.rpm, cfg.tpm, cfg.rph)
         self.sem = asyncio.Semaphore(concurrency)
         self.http = httpx.AsyncClient(timeout=180)
 
