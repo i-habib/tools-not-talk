@@ -65,6 +65,10 @@ def summarize():
             b = arm(high, s)
             if b:
                 r[f"{s}@high"] = b
+        if fam == "GPT-6 Luna":
+            t = arm("gpt-6-luna-tools", "direct")
+            if t:
+                r["direct@tools"] = t
         if r:
             res[fam] = r
     return res
@@ -127,6 +131,11 @@ def figure(table):
             if "@" not in k or "-" in k:
                 continue
             s, eff = k.split("@")
+            if eff == "tools":
+                ax.scatter(max(v["gen_tokens"], 1), 100 * v["acc"], color="#111111", marker="D", s=42, zorder=4)
+                ax.annotate("+tools", (v["gen_tokens"], 100 * v["acc"]), textcoords="offset points", xytext=(4, 3),
+                            fontsize=6)
+                continue
             ax.scatter(max(v["gen_tokens"], 1), 100 * v["acc"], color=colors[s], zorder=3,
                        marker="o" if eff == "low" else "*", s=28 if eff == "low" else 110,
                        edgecolor="k" if eff == "high" else "none", linewidth=0.6)
@@ -143,8 +152,9 @@ def figure(table):
     fig.supxlabel("generated tokens per question (log)", fontsize=7.5, y=0.13)
     handles = [plt.Line2D([], [], color=c, marker="s", ls="", ms=5, label=names[s]) for s, c in colors.items()]
     handles += [plt.Line2D([], [], color="k", marker="o", ls="", ms=4, mfc="w", label="low reasoning"),
-                plt.Line2D([], [], color="k", marker="*", ms=8, ls="", mfc="w", label="high reasoning")]
-    fig.legend(handles=handles, fontsize=6.5, ncol=6, loc="lower center", frameon=False, bbox_to_anchor=(0.5, -0.01))
+                plt.Line2D([], [], color="k", marker="*", ms=8, ls="", mfc="w", label="high reasoning"),
+                plt.Line2D([], [], color="#111111", marker="D", ms=5, ls="", label="1 call + tools")]
+    fig.legend(handles=handles, fontsize=6.5, ncol=7, loc="lower center", frameon=False, bbox_to_anchor=(0.5, -0.01))
     fig.tight_layout(rect=(0, 0.12, 1, 1), w_pad=0.4)
     A.FIG.mkdir(parents=True, exist_ok=True)
     fig.savefig(A.FIG / "fig_think_vs_talk.png", dpi=220)
@@ -219,7 +229,7 @@ def ceiling_analysis():
     out = {}
     # (a) all arms on the shared first-30 questions
     res = summarize()
-    arms = [(f"{f} · {k}", v) for f, a in res.items() for k, v in a.items()]
+    arms = [(f"{f} · {k}", v) for f, a in res.items() for k, v in a.items() if not k.endswith("@tools")]
     M30 = np.array([[v[q][0] for q in Q30] for _, v in arms], float)
     out["first30_all_arms"] = variance_decomposition(M30)
     ceiling_figure([l for l, _ in arms], M30, [TASKS[q]["category"] for q in Q30], "fig_ceiling_first30")

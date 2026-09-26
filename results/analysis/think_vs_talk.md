@@ -23,6 +23,7 @@
 | critique3@high | 0.633 | 5267 |
 | multi3@low | 0.600 | 280 |
 | multi3@high | 0.633 | 5809 |
+| direct@tools | 0.700 | 404 |
 - Direct@high − indep3@low: +0.067 [-0.100, +0.267], McNemar p=0.727
 - Direct@high − critique3@low: +0.067 [-0.133, +0.267], McNemar p=0.754
 - Direct@high − multi3@low: +0.000 [-0.167, +0.200], McNemar p=1.000

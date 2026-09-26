@@ -87,7 +87,7 @@ def main():
     tvt = json.loads((AN / "think_vs_talk.json").read_text()) if (AN / "think_vs_talk.json").exists() else {}
     for fam, F in FAM.items():
         for arm, v in tvt.get(fam, {}).items():
-            if "@" in arm and "-" not in arm:
+            if "@" in arm and "-" not in arm and not arm.endswith("@tools"):
                 s, eff = arm.split("@")
                 add(f"T{STRAT[s]}{eff.capitalize()}{F}", pct(v["acc"], 0))
                 add(f"TTok{STRAT[s]}{eff.capitalize()}{F}", f"{v['gen_tokens']:,.0f}")
@@ -113,6 +113,25 @@ def main():
     add("NAllSolved", mm.get("n_all_solved", "??"))
     add("NUnsolvedRecall", u.get("LitQA2", 0) + u.get("DbQA", 0) if u else "??")
     add("NUnsolvedSeqQAII", u.get("SeqQA2", 0) if u else "??")
+    ta = json.loads((AN / "tools_arm.json").read_text()) if (AN / "tools_arm.json").exists() else {}
+    for key, K in [("first30", "Thirty"), ("unsolved", "Unsolved")]:
+        v = ta.get(key)
+        add(f"ToolsN{K}", v["n"] if v else "??")
+        add(f"ToolsNo{K}", pct(v and v["no_tools"], 0))
+        add(f"ToolsYes{K}", pct(v and v["tools"], 0))
+        add(f"ToolsD{K}", pp(v and v["delta"], 0))
+        add(f"ToolsD{K}Lo", pp(v and v["ci95"][0], 0))
+        add(f"ToolsD{K}Hi", pp(v and v["ci95"][1], 0))
+        add(f"ToolsP{K}", "??" if not v else ("<0.001" if v["mcnemar"]["p_exact"] < 0.001 else f"{v['mcnemar']['p_exact']:.2g}"))
+        add(f"ToolsUse{K}", pct(v and v["tool_use_rate"], 0))
+        add(f"ToolsTok{K}", f"{v['tokens_tools']:,.0f}" if v else "??")
+        for c, C in [("LitQA2", "Lit"), ("DbQA", "Db"), ("SeqQA2", "SeqQAII")]:
+            bc = (v or {}).get("by_category", {}).get(c)
+            add(f"Tools{C}No{K}", pct(bc and bc["no_tools"], 0))
+            add(f"Tools{C}Yes{K}", pct(bc and bc["tools"], 0))
+    add("ToolsLeaks", ta.get("n_leak_flagged", "??"))
+    add("ToolsSearches", ta.get("tool_calls", {}).get("web_search", "??"))
+    add("ToolsExecs", ta.get("tool_calls", {}).get("command_execution", "??"))
     (PAPER / "numbers.tex").write_text("\n".join(L) + "\n")
 
     # prompt appendix, generated from the actual code
