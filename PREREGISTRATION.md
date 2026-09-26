@@ -87,3 +87,16 @@ spending those calls on independent samples plus a majority vote?
 - **Stopping rule (quota):** questions run in a fixed round-robin order over categories. If a model's run is not
   complete by 2026-09-26 20:00 PT, the analysis uses the largest complete prefix in that order (category-balanced), and
   that prefix is reported.
+
+## Deviations (logged after the freeze; they change no prompts, task IDs or analyses)
+1. **Throttling and retry fixes.** On 2026-09-25 the Cerebras response headers showed a 150 requests/hour limit that
+   is not listed in the docs. The runner was stalling on it, so the throttle now respects the hourly limit and
+   rate-limit waits are capped at 300 s. These are runtime fixes only; no completed call was re-run.
+2. **Second provider for GPT-OSS (2026-09-26, 10:55 PT).** The Cerebras free tier could not finish the run before
+   the deadline. The last 13 questions in run order that had no calls yet (`results/gpt-oss-120b/main/groq_qids.txt`)
+   were assigned in full to Groq's `openai/gpt-oss-120b`, with identical prompts, decoding, seeds and cap.
+   - Every call for a given question goes to one provider, so all strategy contrasts stay within-provider for
+     each question.
+   - The provider is recorded per question, and a sensitivity analysis excluding Groq questions is reported.
+3. **Downtime.** The host machine slept from 00:40 to about 10:40 PT on 2026-09-26. The runs paused and then
+   resumed; no data were lost.
