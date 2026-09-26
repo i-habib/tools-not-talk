@@ -136,7 +136,31 @@
    "acc": 0.7,
    "gen_tokens": 8753.1
   },
+  "critique3@high": {
+   "acc": 0.7,
+   "gen_tokens": 7500.5
+  },
+  "multi3@high": {
+   "acc": 0.7,
+   "gen_tokens": 9112.933333333332
+  },
   "indep3@high-direct@high": {
+   "delta": 0.0,
+   "ci95": [
+    -0.1,
+    0.1
+   ],
+   "p": 1.0
+  },
+  "critique3@high-direct@high": {
+   "delta": 0.0,
+   "ci95": [
+    -0.1,
+    0.1
+   ],
+   "p": 1.0
+  },
+  "multi3@high-direct@high": {
    "delta": 0.0,
    "ci95": [
     -0.1,

@@ -35,7 +35,11 @@
 |---|---|---|
 | direct@high | 0.700 | 3228 |
 | indep3@high | 0.700 | 8753 |
+| critique3@high | 0.700 | 7500 |
+| multi3@high | 0.700 | 9113 |
 - indep3@high − Direct@high: +0.000 [-0.100, +0.100], p=1.000
+- critique3@high − Direct@high: +0.000 [-0.100, +0.100], p=1.000
+- multi3@high − Direct@high: +0.000 [-0.100, +0.100], p=1.000
 
 ## GPT-OSS-120B
 | arm | acc | generated tok/q |
