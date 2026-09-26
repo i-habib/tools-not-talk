@@ -124,3 +124,6 @@ spending those calls on independent samples plus a majority vote?
      high effort.
    - Gemma is excluded because the API accepts no thinking level other than `minimal`.
    - Comparisons use generated tokens (output + reasoning), not input tokens.
+   - The GPT-OSS high arm was stopped after 2 calls: both used the full 8,192-token cap on reasoning without
+     producing an answer, and a larger cap would consume the Cerebras quota the main study needs. Both calls were
+     discarded. The arm continues with Flash-Lite (high) and the Codex models (high).

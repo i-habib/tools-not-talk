@@ -1,0 +1,16 @@
+{
+ "name": "flash-lite-high",
+ "provider": "gemini",
+ "model": "gemini-3.5-flash-lite",
+ "rpm": 13,
+ "tpm": 230000,
+ "rph": 0,
+ "tpm_input_only": true,
+ "max_tokens": 8192,
+ "temperature": 0.6,
+ "extra": {
+  "thinkingConfig": {
+   "thinkingLevel": "high"
+  }
+ }
+}
