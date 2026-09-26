@@ -111,3 +111,9 @@ spending those calls on independent samples plus a majority vote?
      call whose event stream still shows tool use is retried up to 3 times and flagged if it persists.
    - A first 25-call attempt ran with Codex's default web search on; it was discarded unanalysed
      (`results/_discarded/gpt-6-luna-websearch-enabled`).
+   - **Reasoning effort (changed 2026-09-26, 11:35 PT):** at `low`, the Codex models used 0 reasoning tokens. The
+     supplement therefore switched to `high` for `gpt-6-luna`, `gpt-6-sol` and `gpt-5.6-terra`.
+     - The completed `gpt-6-luna` low run (30 questions) is kept as a reasoning-effort ablation.
+     - A partial `gpt-6-sol` low run (67 calls) was discarded unanalysed.
+     - Main-study settings are unchanged: GPT-OSS low, Gemma thinking minimal (its only accepted level), Flash-Lite
+       low.

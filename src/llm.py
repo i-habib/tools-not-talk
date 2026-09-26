@@ -57,6 +57,10 @@ MODELS = {
     "gpt-6-luna": ModelCfg("gpt-6-luna", "codex", "gpt-6-luna", rpm=30, tpm=10**9, extra={"effort": "low"}),
     "gpt-6-sol": ModelCfg("gpt-6-sol", "codex", "gpt-6-sol", rpm=30, tpm=10**9, extra={"effort": "low"}),
     "gpt-5.6-terra": ModelCfg("gpt-5.6-terra", "codex", "gpt-5.6-terra", rpm=30, tpm=10**9, extra={"effort": "low"}),
+    # High-reasoning baseline for the frontier supplement (requested 2026-09-26); luna-low above is kept as ablation.
+    "gpt-6-luna-high": ModelCfg("gpt-6-luna-high", "codex", "gpt-6-luna", rpm=30, tpm=10**9, extra={"effort": "high"}),
+    "gpt-6-sol-high": ModelCfg("gpt-6-sol-high", "codex", "gpt-6-sol", rpm=30, tpm=10**9, extra={"effort": "high"}),
+    "gpt-5.6-terra-high": ModelCfg("gpt-5.6-terra-high", "codex", "gpt-5.6-terra", rpm=30, tpm=10**9, extra={"effort": "high"}),
     "mock": ModelCfg("mock", "mock", "mock", rpm=100_000, tpm=10**9),
 }
 
