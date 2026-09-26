@@ -132,3 +132,12 @@ spending those calls on independent samples plus a majority vote?
    - `gpt-oss:120b-cloud` runs at `think=high` (16,384-token cap), all four strategies, on the same first 30
      questions.
    - A `think=low` Direct run on the same questions checks for provider differences against the Cerebras low run.
+7. **Tools arm (added 2026-09-26, 17:00 PT, exploratory; motivated by the "agents without tools" critique).**
+   - Model: `gpt-6-luna` at low effort, with code execution (shell/Python) and live web search enabled. Sub-agents,
+     plugins, apps and MCP stay disabled.
+   - Prompt: a one-sentence harness note announcing the tools is prepended. It is the only prompt difference.
+   - Runs: Direct only, on (a) the first 30 main questions, compared with the existing Luna low no-tools run, and (b)
+     the 32 main questions that none of the 8 main systems solved (`results/unsolved_qids.txt`), where Luna is also
+     run without tools.
+   - Leakage check: all search queries and commands are logged. Any call whose search or command reaches the
+     benchmark itself (LAB-Bench/LABBench2 pages or datasets) is flagged and excluded.

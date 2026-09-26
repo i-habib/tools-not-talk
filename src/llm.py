@@ -62,6 +62,9 @@ MODELS = {
                                   max_tokens=8192, extra={"reasoning_effort": "high"}),
     "flash-lite-high": ModelCfg("flash-lite-high", "gemini", "gemini-3.5-flash-lite", rpm=13, tpm=230_000,
                                 tpm_input_only=True, max_tokens=8192, extra={"thinkingConfig": {"thinkingLevel": "high"}}),
+    # Tools arm (added 2026-09-26 17:00): same Luna/low, but code execution + live web search enabled.
+    "gpt-6-luna-tools": ModelCfg("gpt-6-luna-tools", "codex", "gpt-6-luna", rpm=30, tpm=10**9,
+                                 extra={"effort": "low", "tools": True}),
     # GPT-OSS via Ollama cloud (added 2026-09-26 14:15): high-reasoning arm + a low Direct provider check.
     "gpt-oss-120b-ollama-high": ModelCfg("gpt-oss-120b-ollama-high", "ollama", "gpt-oss:120b-cloud", rpm=30,
                                          tpm=10**9, max_tokens=16384, extra={"think": "high"}),
@@ -230,9 +233,21 @@ CODEX_DISABLE = ["shell_tool", "unified_exec", "unified_exec_tty", "code_mode_ho
                  "plugins", "remote_plugin", "skill_search", "tool_suggest", "view_image", "sleep_tool"]
 
 
+# Tools arm: keep code execution (shell/exec) and live web search; still no sub-agents, plugins, apps or MCP.
+CODEX_DISABLE_TOOLS_ARM = ["multi_agent", "apps", "browser_use", "browser_use_external", "computer_use",
+                           "in_app_browser", "image_generation", "plugins", "remote_plugin", "skill_search",
+                           "tool_suggest", "view_image", "sleep_tool"]
+
+
+TOOLS_NOTE = ("You have a shell with Python (for exact sequence computations) and web search (for literature and "
+              "database lookups); use them whenever they would make your answer more reliable.")
+
+
 async def _codex(c: ModelCfg, prompt: str) -> dict:
     """Retry (up to 3x) any call in which the agent used a tool; if all attempts used tools, return the last one
-    with `tool_items` set so the analysis can flag it."""
+    with `tool_items` set so the analysis can flag it. The tools arm allows tools and never retries."""
+    if c.extra.get("tools"):
+        return await _codex_once(c, prompt)
     for _ in range(3):
         out = await _codex_once(c, prompt)
         if not out["tool_items"]:
@@ -243,18 +258,21 @@ async def _codex(c: ModelCfg, prompt: str) -> dict:
 async def _codex_once(c: ModelCfg, prompt: str) -> dict:
     import json as _json
     os.makedirs(CODEX_DIR, exist_ok=True)
-    disable = [a for f in CODEX_DISABLE for a in ("--disable", f)]
+    tools = bool(c.extra.get("tools"))
+    if tools:  # the tools condition's harness note (the only prompt difference from the no-tools condition)
+        prompt = TOOLS_NOTE + "\n\n" + prompt
+    disable = [a for f in (CODEX_DISABLE_TOOLS_ARM if tools else CODEX_DISABLE) for a in ("--disable", f)]
     proc = await asyncio.create_subprocess_exec(
         "codex", "exec", "--json", "--skip-git-repo-check", "--ephemeral", "-s", "read-only", "-C", CODEX_DIR,
         "-m", c.model, "-c", f'model_reasoning_effort="{c.extra.get("effort", "low")}"',
-        "-c", 'web_search="disabled"', "-c", "mcp_servers={}", *disable, "-",
+        "-c", f'web_search="{"live" if tools else "disabled"}"', "-c", "mcp_servers={}", *disable, "-",
         stdin=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
     try:
         out, err = await asyncio.wait_for(proc.communicate(prompt.encode()), timeout=600)
     except asyncio.TimeoutError:
         proc.kill()
         raise httpx.TimeoutException("codex exec timed out")
-    texts, usage, other, errors = [], {}, [], []
+    texts, usage, other, errors, details = [], {}, [], [], []
     for line in out.decode(errors="replace").splitlines():
         try:
             ev = _json.loads(line)
@@ -268,6 +286,8 @@ async def _codex_once(c: ModelCfg, prompt: str) -> dict:
                 pass  # expected: code execution is disabled and fails closed
             elif item.get("type") != "reasoning":
                 other.append(item.get("type"))
+                details.append({k: item.get(k) for k in ("type", "query", "action", "command", "aggregated_output",
+                                                         "exit_code") if item.get(k) is not None})
         elif ev.get("type") == "turn.completed":
             usage = ev.get("usage", {})
         elif ev.get("type") in ("error", "turn.failed"):
@@ -279,7 +299,10 @@ async def _codex_once(c: ModelCfg, prompt: str) -> dict:
             raise QuotaExhausted(blob[:400])
         raise RuntimeError(f"codex exec produced no message: {blob[:400]}")
     n_in, n_out = usage.get("input_tokens", 0), usage.get("output_tokens", 0) + usage.get("reasoning_output_tokens", 0)
-    return {"text": texts[-1], "reasoning": "", "finish_reason": "stop", "tool_items": other,
+    for d in details:
+        if "aggregated_output" in d:
+            d["aggregated_output"] = str(d["aggregated_output"])[:2000]
+    return {"text": texts[-1], "reasoning": "", "finish_reason": "stop", "tool_items": other, "tool_details": details,
             "usage": {"input_tokens": n_in, "output_tokens": n_out, "reasoning_tokens": usage.get("reasoning_output_tokens"),
                       "total_tokens": n_in + n_out}, "raw_usage": usage}
 
