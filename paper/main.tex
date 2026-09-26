@@ -55,7 +55,7 @@ We report effect sizes and 95\% bootstrap confidence intervals rather than relyi
 
 \section{Introduction}
 
-Recent work has demonstrated that agentic approaches to reasoning---orchestrating multiple calls to language models with feedback loops, self-critique, or multi-agent discussion---can improve accuracy on complex scientific and mathematical tasks.
+Recent work has demonstrated that agentic approaches to reasoning---orchestrating multiple calls to language models with feedback loops, self-critique, or multi-agent discussion---can improve accuracy on complex scientific and mathematical tasks \citep{du2023debate,madaan2023selfrefine,swanson2024virtuallab,gottweis2026coscientist}.
 These gains have been attributed to the value of structured interaction and iterative refinement.
 However, many studies confound two distinct sources of improvement:
 (i)~the benefit of \emph{orchestrated interaction} (one agent learning from another's feedback, multi-agent deliberation, etc.) and
@@ -73,6 +73,13 @@ At a matched computational budget of three model calls per question, does struct
   \item Evidence on the efficiency of orchestrated interaction: which mechanisms (self-revision, multi-agent adjudication) rescue errors and which introduce new mistakes?
   \item A replicable methodology using deterministic answer-equivalence rules, bootstrap confidence intervals, and task selection filters---no LLM judge, no multiple-comparison penalties on secondary contrasts.
 \end{enumerate}
+
+\section{Related Work}
+\textbf{Agentic science.} LLM agents now plan experiments, run analyses and propose hypotheses in chemistry and biology \citep{boiko2023coscientist,bran2023chemcrow,swanson2024virtuallab,huang2025biomni,gottweis2026coscientist,ghareeb2026robin}, and benchmarks such as LAB-Bench, LABBench2, BioPlanner and BixBench measure these capabilities \citep{laurent2024labbench,labbench2,bioplanner2023,bixbench2025}. Reported gains are usually measured against single-call baselines.
+\textbf{Test-time compute.} Sampling several answers and voting improves accuracy on its own \citep{wang2022selfconsistency,li2024moreagents,brown2024monkeys,snell2024scaling}, so any multi-call system inherits this gain.
+\textbf{Debate and self-correction.} Multi-agent debate \citep{du2023debate,liang2024divergent} and self-refinement \citep{madaan2023selfrefine,shinn2023reflexion} were proposed as improvements over single-pass reasoning, but compute-matched studies on general reasoning benchmarks find that much of the debate gain is attributable to voting \citep{wang2024rethinking,smit2024mad,choi2025debatevsvote,wu2025candebate}, and intrinsic self-correction without external feedback can hurt \citep{huang2023cannotcorrect}. Multi-agent systems also fail in characteristic ways \citep{cemri2025whyfail}.
+\textbf{Evaluation practice.} Cost-aware agent evaluation \citep{kapoor2024agentsmatters} and paired statistics for evals \citep{miller2024errorbars} motivate our design.
+We extend the compute-matched comparison to biological research tasks, add sequential critique alongside multi-agent adjudication at the same budget, score deterministically without an LLM judge, and pre-register the analysis.
 
 \section{Setup}
 
@@ -301,7 +308,6 @@ We report point estimates and confidence intervals rather than relying on signif
 The results provide guidance on when to allocate inference budget to multi-agent deliberation, self-critique, or independent sampling.
 
 \newpage
-\section*{References}
 
 \bibliographystyle{plainnat}
 \bibliography{refs}
