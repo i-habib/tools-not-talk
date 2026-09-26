@@ -94,7 +94,7 @@ spending those calls on independent samples plus a majority vote?
    rate-limit waits are capped at 300 s. These are runtime fixes only; no completed call was re-run.
 2. **Second provider for GPT-OSS (2026-09-26, 10:55 PT).** The Cerebras free tier could not finish the run before
    the deadline. The last 13 questions in run order that had no calls yet (`results/gpt-oss-120b/main/groq_qids.txt`)
-   (13 questions; 8 more added at 11:20 PT once Groq quota allowed) were assigned in full to Groq's `openai/gpt-oss-120b`, with identical prompts, decoding, seeds and cap.
+   (13 questions; 8 more at 11:20 PT and 15 more at 14:05 PT as Groq quota allowed) were assigned in full to Groq's `openai/gpt-oss-120b`, with identical prompts, decoding, seeds and cap.
    - Every call for a given question goes to one provider, so all strategy contrasts stay within-provider for
      each question.
    - The provider is recorded per question, and a sensitivity analysis excluding Groq questions is reported.
