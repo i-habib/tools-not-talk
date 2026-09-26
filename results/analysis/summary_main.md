@@ -1,49 +1,49 @@
 # Results (main)
 
-## gpt-oss-120b  (n = 124 questions)
+## gpt-oss-120b  (n = 150 questions)
 
 | Strategy | Acc | 95% CI | tokens/q | out tok/q | correct/Mtok | trunc | parse-fail |
 |---|---|---|---|---|---|---|---|
-| Direct (1 call) | 0.476 | [0.387, 0.565] | 974 | 248 | 488 | 0 | 1 |
-| Independent×3 (vote) | 0.492 | [0.403, 0.581] | 2888 | 710 | 170 | 0 | 3 |
-| Solve→Critique→Revise | 0.444 | [0.355, 0.532] | 3190 | 756 | 139 | 0 | 4 |
-| Two scientists + adjudicator | 0.508 | [0.419, 0.597] | 3165 | 804 | 161 | 0 | 0 |
+| Direct (1 call) | 0.467 | [0.387, 0.547] | 959 | 257 | 487 | 1 | 2 |
+| Independent×3 (vote) | 0.493 | [0.413, 0.573] | 2842 | 737 | 174 | 3 | 6 |
+| Solve→Critique→Revise | 0.427 | [0.347, 0.507] | 3130 | 771 | 136 | 2 | 5 |
+| Two scientists + adjudicator | 0.473 | [0.393, 0.553] | 3125 | 837 | 151 | 3 | 1 |
 
 | Paired contrast | Δacc | 95% CI | A-only | B-only | McNemar p |
 |---|---|---|---|---|---|
-| multi3-indep3 | +0.016 | [-0.056, +0.089] | 12 | 10 | 0.832 |
-| critique3-indep3 | -0.048 | [-0.145, +0.048] | 17 | 23 | 0.430 |
-| indep3-direct | +0.016 | [-0.040, +0.073] | 8 | 6 | 0.791 |
-| multi3-direct | +0.032 | [-0.048, +0.113] | 15 | 11 | 0.557 |
-| critique3-direct | -0.032 | [-0.129, +0.065] | 17 | 21 | 0.627 |
-| multi3-critique3 | +0.065 | [-0.024, +0.153] | 20 | 12 | 0.215 |
+| multi3-indep3 | -0.020 | [-0.087, +0.047] | 12 | 15 | 0.701 |
+| critique3-indep3 | -0.067 | [-0.153, +0.020] | 18 | 28 | 0.184 |
+| indep3-direct | +0.027 | [-0.027, +0.080] | 11 | 7 | 0.481 |
+| multi3-direct | +0.007 | [-0.060, +0.080] | 15 | 14 | 1.000 |
+| critique3-direct | -0.040 | [-0.127, +0.047] | 20 | 26 | 0.461 |
+| multi3-critique3 | +0.047 | [-0.033, +0.127] | 22 | 15 | 0.324 |
 
-**Disagreement subset** (independent samples not unanimous): 46 / 124 (37%)
+**Disagreement subset** (independent samples not unanimous): 57 / 150 (38%)
 
 | Strategy | acc on disagreement | acc on unanimous |
 |---|---|---|
-| Direct (1 call) | 0.326 (15/46) | 0.564 (44/78) |
-| Independent×3 (vote) | 0.304 (14/46) | 0.603 (47/78) |
-| Solve→Critique→Revise | 0.283 (13/46) | 0.538 (42/78) |
-| Two scientists + adjudicator | 0.348 (16/46) | 0.603 (47/78) |
+| Direct (1 call) | 0.316 (18/57) | 0.559 (52/93) |
+| Independent×3 (vote) | 0.333 (19/57) | 0.591 (55/93) |
+| Solve→Critique→Revise | 0.263 (15/57) | 0.527 (49/93) |
+| Two scientists + adjudicator | 0.281 (16/57) | 0.591 (55/93) |
 
 | vs Independent×3 vote | rescue P(correct | vote wrong) | corruption P(wrong | vote right) |
 |---|---|---|
-| critique3 | 0.270 (17/63) | 0.377 (23/61) |
-| multi3 | 0.190 (12/63) | 0.164 (10/61) |
-| direct | 0.095 (6/63) | 0.131 (8/61) |
+| critique3 | 0.237 (18/76) | 0.378 (28/74) |
+| multi3 | 0.158 (12/76) | 0.203 (15/74) |
+| direct | 0.092 (7/76) | 0.149 (11/74) |
 
 | Category | n | direct | indep3 | critique3 | multi3 | disagree |
 |---|---|---|---|---|---|---|
-| ProtocolQA | 25 | 0.64 | 0.52 | 0.48 | 0.52 | 0.32 |
-| SeqQA | 24 | 0.62 | 0.67 | 0.42 | 0.62 | 0.33 |
-| DbQA | 26 | 0.42 | 0.46 | 0.50 | 0.38 | 0.31 |
-| LitQA2 | 24 | 0.21 | 0.29 | 0.42 | 0.42 | 0.46 |
-| SeqQA2 | 25 | 0.48 | 0.52 | 0.40 | 0.60 | 0.44 |
+| ProtocolQA | 30 | 0.57 | 0.50 | 0.43 | 0.47 | 0.33 |
+| SeqQA | 30 | 0.63 | 0.67 | 0.43 | 0.60 | 0.33 |
+| DbQA | 30 | 0.47 | 0.47 | 0.43 | 0.37 | 0.37 |
+| LitQA2 | 30 | 0.20 | 0.30 | 0.40 | 0.37 | 0.43 |
+| SeqQA2 | 30 | 0.47 | 0.53 | 0.43 | 0.57 | 0.43 |
 
-Single independent sample acc: 0.487; any-of-3 correct (oracle): 0.581
-Critique revision: {"rescue": {"rate": 0.25806451612903225, "n": 62, "k": 16}, "corruption": {"rate": 0.3709677419354839, "n": 62, "k": 23}, "initial_acc": 0.5}
-Multi-agent adjudication: {"scientists_disagree": 44, "researcher_acc": 0.5080645161290323, "skeptic_acc": 0.49193548387096775, "adjudicator_acc_when_disagree": {"rate": 0.29545454545454547, "n": 44, "k": 13}, "either_scientist_correct_when_disagree": {"rate": 0.5, "n": 44, "k": 22}, "adjudicator_overrides_agreement": 3}
+Single independent sample acc: 0.480; any-of-3 correct (oracle): 0.573
+Critique revision: {"rescue": {"rate": 0.2236842105263158, "n": 76, "k": 17}, "corruption": {"rate": 0.36486486486486486, "n": 74, "k": 27}, "initial_acc": 0.49333333333333335}
+Multi-agent adjudication: {"scientists_disagree": 54, "researcher_acc": 0.4866666666666667, "skeptic_acc": 0.48, "adjudicator_acc_when_disagree": {"rate": 0.25925925925925924, "n": 54, "k": 14}, "either_scientist_correct_when_disagree": {"rate": 0.5, "n": 54, "k": 27}, "adjudicator_overrides_agreement": 4}
 
 ## gemma-4-31b  (n = 150 questions)
 

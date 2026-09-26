@@ -49,7 +49,7 @@ def main():
             add(f"D{k}", pp(c and c["delta"]))
             add(f"D{k}Lo", pp(c and c["ci95"][0]))
             add(f"D{k}Hi", pp(c and c["ci95"][1]))
-            add(f"P{k}", "??" if not c else ("<0.001" if c["p_exact"] < 0.001 else f"{c['p_exact']:.2f}"))
+            add(f"P{k}", "??" if not c else ("<0.001" if c["p_exact"] < 0.001 else f"{c['p_exact']:.2g}"))
         d = r["disagreement"] if r else None
         add(f"DisFrac{M}", pct(d and d["frac"], 0))
         for s, S in STRAT.items():
@@ -61,6 +61,28 @@ def main():
         for cat, C in [("SeqQA", "SeqQA"), ("ProtocolQA", "Protocol"), ("SeqQA2", "SeqQAII")]:
             bc = r["by_category"].get(cat) if r else None
             add(f"CritMinusVote{C}{M}", pp(bc and bc["critique3"] - bc["indep3"], 0))
+    # sensitivity: GPT-OSS without the Groq-served questions; pooled contrasts over the three main models
+    import numpy as np
+    import analyze as AN_
+    oss = [r for r in AN_.per_question("gpt-oss-120b", "main") if r.get("provider") == "primary"]
+    if oss:
+        so = AN_.analyze(oss)["contrasts"]["multi3-indep3"]
+        add("NOSSNoGroq", len(oss))
+        add("DDebateMinusVoteOSSNoGroq", pp(so["delta"]))
+    pooled = [r for m in MODEL for r in AN_.per_question(m, "main")]
+    by = {}
+    for m in MODEL:
+        by[m] = AN_.per_question(m, "main")
+    rng = np.random.default_rng(AN_.BOOT_SEED)
+    for a, b, K in [("critique3", "indep3", "CritiqueMinusVote"), ("multi3", "indep3", "DebateMinusVote"),
+                    ("indep3", "direct", "VoteMinusDirect")]:
+        diffs = {m: np.array([r[f"{a}_correct"] - r[f"{b}_correct"] for r in rr], float) for m, rr in by.items() if rr}
+        allv = np.concatenate(list(diffs.values()))
+        bs = [np.concatenate([v[rng.integers(0, len(v), len(v))] for v in diffs.values()]).mean() for _ in range(10000)]
+        add(f"DPooled{K}", pp(allv.mean()))
+        add(f"DPooled{K}Lo", pp(np.percentile(bs, 2.5)))
+        add(f"DPooled{K}Hi", pp(np.percentile(bs, 97.5)))
+    add("NPooled", len(pooled))
     # think vs talk (first 30)
     tvt = json.loads((AN / "think_vs_talk.json").read_text()) if (AN / "think_vs_talk.json").exists() else {}
     for fam, F in FAM.items():
@@ -69,6 +91,10 @@ def main():
                 s, eff = arm.split("@")
                 add(f"T{STRAT[s]}{eff.capitalize()}{F}", pct(v["acc"], 0))
                 add(f"TTok{STRAT[s]}{eff.capitalize()}{F}", f"{v['gen_tokens']:,.0f}")
+    for fam, F in FAM.items():
+        a = tvt.get(fam, {})
+        if "direct@low" in a and "direct@high" in a:
+            add(f"TokRatio{F}", f"{a['direct@high']['gen_tokens'] / max(a['direct@low']['gen_tokens'], 1):.0f}")
     # ceiling
     ce = json.loads((AN / "ceiling.json").read_text()) if (AN / "ceiling.json").exists() else {}
     for key, K in [("first30_all_arms", "Thirty"), ("main_models", "Main")]:

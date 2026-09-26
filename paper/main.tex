@@ -29,9 +29,9 @@
 Agentic systems for biology usually report gains over a single model call while spending several calls.
 We ask where such gains come from on objectively scored biology research tasks (LAB-Bench and LABBench2: protocol troubleshooting, sequence manipulation, database and literature questions).
 At a matched budget of three calls, we compare independent sampling with majority vote, sequential self-critique, and a two-scientist debate with an adjudicator, across three open and API models on 150 pre-registered questions scored without an LLM judge, and we contrast these with simply letting frontier models reason longer.
-Self-critique never beats majority voting and repairs about as many answers as it breaks.
-Debate helps only where the model cannot reason on its own: it adds \DDebateMinusVoteGemma{} points for Gemma with thinking disabled, but \DDebateMinusVoteOSS{} and \DDebateMinusVoteLite{} for models that reason, and nothing for frontier models at high reasoning effort, where all strategies tie.
-Letting a frontier model reason longer in one call reaches the same plateau as orchestration.
+Self-critique never beats majority voting (pooled $\DPooledCritiqueMinusVote$ points) and breaks at least as many answers as it repairs.
+Debate helps only where the model cannot reason on its own: it adds \DDebateMinusVoteGemma{} points for Gemma with thinking disabled, but \DDebateMinusVoteOSS{} and \DDebateMinusVoteLite{} for models that reason, and no reliable gain for frontier models at high reasoning effort.
+Raising reasoning effort rarely helps either: GPT-OSS generates \TokRatioOSS$\times$ more tokens at high effort for no gain, and across six model families accuracy varies little while spending varies by nearly two orders of magnitude.
 The dominant factor is the question itself: across systems, question identity explains \ItemShareMain\% of the variance in correctness, while the choice of model, strategy and reasoning effort explains \ArmShareMain\%.
 On these tasks, additional inference, however organised, does not substitute for missing knowledge.
 \end{abstract}
@@ -47,8 +47,8 @@ We then ask a second question the agent literature rarely asks: does letting a s
 
 \paragraph{Findings.}
 (1)~At matched budget, sequential critique never improves on majority voting, and multi-agent debate improves on it only for a model whose reasoning is switched off.
-(2)~Critique is a coin flip at the level of individual answers: it rescues and corrupts at similar rates, and it is most harmful on exact sequence manipulation.
-(3)~Debate behaves as a substitute for reasoning: for frontier models, raising reasoning effort lifts a single call to the level that debate reaches, and stacking orchestration on top adds nothing.
+(2)~Critique never helps: it breaks at least as many correct answers as it repairs, and for models that reason it is most harmful on exact sequence manipulation.
+(3)~Thinking longer is not a way out: higher reasoning effort helps only a model that otherwise does not reason at all, and then only up to the level its low-effort debate already reached; stacking orchestration on top adds nothing reliable.
 (4)~Most strikingly, whether a system is right depends overwhelmingly on \emph{which question} it faces and barely on \emph{how} it spends inference: every system solves the same questions and fails the same questions (Fig.~\ref{fig:ceiling}).
 The remaining errors look like missing knowledge, not missing deliberation.
 
@@ -70,7 +70,7 @@ No LLM judge is used anywhere.
 The main study uses GPT-OSS-120B \citep{openai2025gptoss} (\texttt{reasoning\_effort=low}), Gemma~4~31B \citep{google2026gemma4} (thinking off, the only non-default setting the API accepts), and Gemini~3.5 Flash-Lite (thinking low), all through free API tiers.
 Decoding uses temperature 0.6, fixed per-call seeds and a 2{,}048-token cap.
 GPT-OSS and Gemma answer all 150 questions and Flash-Lite a fixed 75-question subset.
-For the reasoning-effort analysis we additionally run GPT-6 Luna, GPT-6 Sol and GPT-5.6 Terra (all strategies, high effort; Luna also at low effort) and Flash-Lite (\direct{} at high thinking) on the first 30 questions in the fixed run order (6 per category).
+For the reasoning-effort analysis we additionally run GPT-6 Luna, GPT-6 Sol and GPT-5.6 Terra (all strategies, high effort; Luna also at low effort), GPT-OSS at high effort (all strategies, served by Ollama; a low-effort \direct{} run on the same host matches the main run's accuracy) and Flash-Lite (\direct{} at high thinking), all on the first 30 questions in the fixed run order (6 per category).
 
 \paragraph{Pre-registration.}
 Task IDs, prompts, decoding, hypotheses and the analysis script were committed before the main run.
@@ -95,11 +95,12 @@ Flash-Lite & \NLite & \AccDirectLite & \AccVoteLite & \AccCritiqueLite & \AccDeb
 
 \paragraph{Orchestration beats voting only when the model cannot think.}
 \debate{} improves on \vote{} for Gemma, whose thinking is disabled ($\DDebateMinusVoteGemma$ points, 95\% CI [$\DDebateMinusVoteGemmaLo$, $\DDebateMinusVoteGemmaHi$], McNemar $p=\PDebateMinusVoteGemma$), and the gain survives excluding every question with a truncated call.
-For the two models that reason, the interval includes zero ($p=\PDebateMinusVoteOSS$ and $\PDebateMinusVoteLite$).
+For the two models that reason, the interval includes zero ($p=\PDebateMinusVoteOSS$ and $\PDebateMinusVoteLite$; for GPT-OSS the estimate is unchanged at $\DDebateMinusVoteOSSNoGroq$ when the \the\numexpr150-\NOSSNoGroq\relax{} questions served by the second provider are excluded).
+Pooled over all \NPooled{} model--question pairs, \debate{} $-$ \vote{} is $\DPooledDebateMinusVote$ [$\DPooledDebateMinusVoteLo$, $\DPooledDebateMinusVoteHi$] points and \critique{} $-$ \vote{} is $\DPooledCritiqueMinusVote$ [$\DPooledCritiqueMinusVoteLo$, $\DPooledCritiqueMinusVoteHi$].
 \critique{} is never better than \vote{} ($\DCritiqueMinusVoteOSS$, $\DCritiqueMinusVoteGemma$, $\DCritiqueMinusVoteLite$ points).
 Voting itself barely improves on a single call ($\DVoteMinusDirectOSS$, $\DVoteMinusDirectGemma$, $\DVoteMinusDirectLite$ points), even though the three samples disagree on \DisFracOSS\%, \DisFracGemma\% and \DisFracLite\% of questions.
 
-\paragraph{Critique repairs about as often as it breaks.}
+\paragraph{Critique breaks at least as often as it repairs.}
 Relative to the vote, \critique{} rescues \RescueCritiqueOSS\%, \RescueCritiqueGemma\% and \RescueCritiqueLite\% of wrong answers but corrupts \CorruptCritiqueOSS\%, \CorruptCritiqueGemma\% and \CorruptCritiqueLite\% of correct ones.
 For the two models that reason, the largest losses are on exact sequence manipulation (SeqQA: \CritMinusVoteSeqQAOSS{} and \CritMinusVoteSeqQALite{} points vs.\ \vote{} for GPT-OSS and Flash-Lite; \CritMinusVoteSeqQAGemma{} for Gemma), where a fluent but wrong critique talks the model out of a correct computation.
 
@@ -110,12 +111,11 @@ For the two models that reason, the largest losses are on exact sequence manipul
 \label{fig:tvt}
 \end{figure}
 
-\paragraph{Thinking longer reaches the same plateau.}
-The same pattern holds within one model. At low effort (no reasoning tokens), GPT-6 Luna gains from debate (\TDebateLowLuna\% vs.\ \TVoteLowLuna\% for \vote), just like Gemma. A single high-effort call (\TDirectHighLuna\%) matches low-effort \debate{} (\TDebateLowLuna\%) and exceeds a low-effort single call (\TDirectLowLuna\%).
-Adding orchestration on top of high effort lifts Luna only to \TVoteHighLuna\% while generating ${\sim}3\times$ more tokens (Fig.~\ref{fig:tvt}).
-For Flash-Lite, high thinking does not help at all (\TDirectHighLite\% vs.\ \TDirectLowLite\%) despite ${\sim}5\times$ the tokens.
-For GPT-6 Sol at high effort, all four strategies score exactly \TDirectHighSol\% while the three-call strategies generate ${\sim}3\times$ the tokens.
-Orchestration and extended reasoning are two routes to the same ceiling, not complementary gains.
+\paragraph{Thinking longer mostly does not help either.}
+On the same 30 questions (Fig.~\ref{fig:tvt}), raising GPT-OSS to high reasoning effort multiplies generated tokens by \TokRatioOSS$\times$ (\TTokDirectLowOSS{} to \TTokDirectHighOSS{} per question) while accuracy stays flat (\TDirectLowOSS\% to \TDirectHighOSS\%). For Flash-Lite the result is the same (\TDirectLowLite\% to \TDirectHighLite\%, \TokRatioLite$\times$ tokens).
+The one model that gains is GPT-6 Luna, which at low effort uses no reasoning tokens (\TDirectLowLuna\% to \TDirectHighLuna\%). Its high-effort single call lands exactly where its low-effort \debate{} already was (\TDebateLowLuna\%), consistent with debate acting as a substitute for reasoning.
+Orchestration on top of high effort adds nothing reliable. GPT-6 Sol scores \TDirectHighSol\% with all four strategies, and GPT-5.6 Terra ranges from \TCritiqueHighTerra\% (\critique) to \TDebateHighTerra\% (\debate) with no paired difference significant.
+Within each model, accuracy moves by a few questions while generated tokens vary by up to two orders of magnitude.
 
 \begin{figure}[t]
 \centering
@@ -132,7 +132,7 @@ Of the \NUnsolved{} questions that no main system solves, \NUnsolvedRecall{} req
 \section{Discussion}
 On objectively scored biology research tasks, the additional calls in agentic pipelines buy little beyond what independent sampling or a longer single call buys.
 Debate is the exception, and only when the model is not allowed to reason; once reasoning is on, its gain disappears, and critique can hurt when a confident critic overrides a correct computation.
-For strong models, the same plateau is reached more cheaply by letting one call reason longer.
+Longer reasoning is not a reliable substitute either: it helped only a model that otherwise did not reason.
 The practical implication for agent builders is to measure against a compute-matched vote \citep{kapoor2024agentsmatters} and to invest the budget in \emph{knowledge access} (retrieval, databases, code execution) rather than in more elaborate conversations between copies of the same model.
 Our results agree with compute-matched analyses of debate on general reasoning benchmarks \citep{wang2024rethinking,smit2024mad,choi2025debatevsvote,wu2025candebate} and with evidence that intrinsic self-correction is unreliable \citep{huang2023cannotcorrect}. We extend them to biology, to sequential critique, and to the trade-off between orchestration and reasoning effort.
 
