@@ -127,3 +127,8 @@ spending those calls on independent samples plus a majority vote?
    - The GPT-OSS high arm was stopped after 2 calls: both used the full 8,192-token cap on reasoning without
      producing an answer, and a larger cap would consume the Cerebras quota the main study needs. Both calls were
      discarded. The arm continues with Flash-Lite (high) and the Codex models (high).
+6. **GPT-OSS via Ollama cloud (added 2026-09-26, 14:15 PT, exploratory).** This restores GPT-OSS to the
+   reasoning-effort arm, which had been dropped for lack of Cerebras quota.
+   - `gpt-oss:120b-cloud` runs at `think=high` (16,384-token cap), all four strategies, on the same first 30
+     questions.
+   - A `think=low` Direct run on the same questions checks for provider differences against the Cerebras low run.

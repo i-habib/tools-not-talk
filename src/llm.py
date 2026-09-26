@@ -62,6 +62,11 @@ MODELS = {
                                   max_tokens=8192, extra={"reasoning_effort": "high"}),
     "flash-lite-high": ModelCfg("flash-lite-high", "gemini", "gemini-3.5-flash-lite", rpm=13, tpm=230_000,
                                 tpm_input_only=True, max_tokens=8192, extra={"thinkingConfig": {"thinkingLevel": "high"}}),
+    # GPT-OSS via Ollama cloud (added 2026-09-26 14:15): high-reasoning arm + a low Direct provider check.
+    "gpt-oss-120b-ollama-high": ModelCfg("gpt-oss-120b-ollama-high", "ollama", "gpt-oss:120b-cloud", rpm=30,
+                                         tpm=10**9, max_tokens=16384, extra={"think": "high"}),
+    "gpt-oss-120b-ollama-low": ModelCfg("gpt-oss-120b-ollama-low", "ollama", "gpt-oss:120b-cloud", rpm=30,
+                                        tpm=10**9, extra={"think": "low"}),
     # High-reasoning baseline for the frontier supplement (requested 2026-09-26); luna-low above is kept as ablation.
     "gpt-6-luna-high": ModelCfg("gpt-6-luna-high", "codex", "gpt-6-luna", rpm=30, tpm=10**9, extra={"effort": "high"}),
     "gpt-6-sol-high": ModelCfg("gpt-6-sol-high", "codex", "gpt-6-sol", rpm=30, tpm=10**9, extra={"effort": "high"}),
@@ -152,6 +157,21 @@ class LLM:
             return _mock(prompt, seed)
         if c.provider == "codex":
             return await _codex(c, prompt)
+        if c.provider == "ollama":
+            body = {"model": c.model, "messages": [{"role": "user", "content": prompt}], "stream": False,
+                    "think": c.extra.get("think", "low"),
+                    "options": {"temperature": c.temperature, "seed": seed, "num_predict": c.max_tokens}}
+            r = await self.http.post("http://localhost:11434/api/chat", json=body)
+            if r.status_code == 429 or "usage limit" in r.text.lower():
+                raise QuotaExhausted(r.text[:300])
+            r.raise_for_status()
+            d = r.json()
+            msg = d.get("message") or {}
+            n_in, n_out = d.get("prompt_eval_count", 0), d.get("eval_count", 0)
+            return {"text": msg.get("content") or "", "reasoning": msg.get("thinking") or "",
+                    "finish_reason": d.get("done_reason"),
+                    "usage": {"input_tokens": n_in, "output_tokens": n_out, "reasoning_tokens": None,
+                              "total_tokens": n_in + n_out}, "raw_usage": {}}
         if c.provider in ENDPOINTS:
             url, env = ENDPOINTS[c.provider]
             body = {"model": c.model, "messages": [{"role": "user", "content": prompt}],
