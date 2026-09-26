@@ -1,6 +1,6 @@
 # Pre-registration: Where does the agentic gain come from?
 
-Status: **DRAFT (pilot pending)**. This file will be frozen in a commit before the main run.
+Status: **FROZEN** (2026-09-25, after pilot; before any main-split call).
 After that commit, prompts, task IDs, model configs and the analysis script do not change.
 
 ## Question
@@ -66,5 +66,24 @@ spending those calls on independent samples plus a majority vote?
 - **Failures:** API errors are retried. Calls that still fail are re-run later with the same seed. A question counts
   only if all 10 of its calls completed.
 
-## Pilot outcome
-(filled in before freeze)
+## Pilot outcome (10 pilot items × 10 calls × 3 models, plus a Direct-only calibration on 20 reserve items/category)
+- **Tokens:** GPT-OSS averaged 632 tokens/call (pilot, all strategies) and 979 (reserve, Direct). Below the reduction
+  threshold, so **N = 150**.
+- **Truncation:** at a 1,024-token cap, Gemma and Flash-Lite each hit the cap on 5/100 calls, all in solve calls, where
+  a hit means no answer. `max_tokens` was **raised once to 2,048** for all models.
+  - Residual Gemma truncation at 2,048 is due to long visible working on SeqQA items. It is reported, not tuned.
+- **Gemma thinking:** by default, Gemma 4 spent the entire cap on hidden thinking in every call and produced no
+  answers. `thinkingConfig.thinkingLevel` is set to `minimal` (thinking off). This is the only accepted value; `low`
+  and `thinkingBudget` return HTTP 400. Those 100 discarded calls are not analysed.
+- **Flash-Lite:** `thinkingLevel = low`.
+- **Saturation/floor:** Direct accuracy on 20 reserve items per category was:
+
+  | Model | ProtocolQA | SeqQA | DbQA | LitQA2 | SeqQA2 |
+  |---|---|---|---|---|---|
+  | GPT-OSS | 0.60 | 0.60 | 0.30 | 0.55 | 0.50 |
+  | Gemma (~13/cat) | 0.69 | 0.38 | 0.71 | 0.31 | 0.46 |
+
+  No category is > 90%, and none is at chance for both models, so **no categories were replaced or dropped**.
+- **Stopping rule (quota):** questions run in a fixed round-robin order over categories. If a model's run is not
+  complete by 2026-09-26 20:00 PT, the analysis uses the largest complete prefix in that order (category-balanced), and
+  that prefix is reported.

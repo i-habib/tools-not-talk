@@ -17,6 +17,9 @@ import httpx
 from dotenv import load_dotenv
 
 load_dotenv()
+for _short, _full in (("CEREBRAS", "CEREBRAS_API_KEY"), ("GEMINI", "GEMINI_API_KEY"), ("GROQ", "GROQ_API_KEY")):
+    if not os.environ.get(_full) and os.environ.get(_short):
+        os.environ[_full] = os.environ[_short].strip().strip('"').strip("'")
 
 
 @dataclass
@@ -27,7 +30,7 @@ class ModelCfg:
     rpm: int
     tpm: int
     tpm_input_only: bool = False  # Gemini API quotas count input tokens only
-    max_tokens: int = 1024    # completion cap per call (includes hidden reasoning tokens)
+    max_tokens: int = 2048    # completion cap per call (includes hidden reasoning tokens)
     temperature: float = 0.6
     extra: dict = field(default_factory=dict)
 
@@ -41,7 +44,10 @@ MODELS = {
                                   extra={"reasoning_effort": "low"}),
     # Account limits observed in AI Studio (free tier, 2026-09-25): Gemma 4 31B 30 RPM / 16K input TPM / 14.4K RPD;
     # Gemini 3.5 Flash-Lite 15 RPM / 250K TPM / 500 RPD.
-    "gemma-4-31b": ModelCfg("gemma-4-31b", "gemini", "gemma-4-31b-it", rpm=25, tpm=15_000, tpm_input_only=True),
+    "gemma-4-31b": ModelCfg("gemma-4-31b", "gemini", "gemma-4-31b-it", rpm=25, tpm=15_000, tpm_input_only=True,
+                            # Default Gemma 4 thinking exhausted the 1024-token cap on every pilot call (no answer);
+                            # "minimal" is the only accepted thinking control ("low"/thinkingBudget -> HTTP 400).
+                            extra={"thinkingConfig": {"thinkingLevel": "minimal"}}),
     "flash-lite": ModelCfg("flash-lite", "gemini", "gemini-3.5-flash-lite", rpm=13, tpm=230_000, tpm_input_only=True,
                            extra={"thinkingConfig": {"thinkingLevel": "low"}}),
     "mock": ModelCfg("mock", "mock", "mock", rpm=100_000, tpm=10**9),

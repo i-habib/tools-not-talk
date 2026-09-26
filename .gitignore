@@ -8,3 +8,10 @@ data/labbench2_files/
 data/tasks.jsonl
 results/**/calls.jsonl
 .DS_Store
+logs/
+paper/*.aux
+paper/*.log
+paper/*.out
+paper/*.bbl
+paper/*.blg
+results/_discarded/

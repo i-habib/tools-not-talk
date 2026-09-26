@@ -1,0 +1,842 @@
+{
+ "gpt-oss-120b": {
+  "n": 10,
+  "strategies": {
+   "direct": {
+    "accuracy": 0.7,
+    "ci95": [
+     0.4,
+     1.0
+    ],
+    "tokens_per_q": 578.2,
+    "input_per_q": 408.3,
+    "output_per_q": 169.9,
+    "latency_per_q": 0.36269999999999997,
+    "correct_per_Mtok": 1210.6537530266344,
+    "truncated_calls": 0,
+    "parse_failures": 0
+   },
+   "indep3": {
+    "accuracy": 0.8,
+    "ci95": [
+     0.5,
+     1.0
+    ],
+    "tokens_per_q": 1745.4,
+    "input_per_q": 1224.9,
+    "output_per_q": 520.5,
+    "latency_per_q": 1.3206,
+    "correct_per_Mtok": 458.34765669760515,
+    "truncated_calls": 0,
+    "parse_failures": 0
+   },
+   "critique3": {
+    "accuracy": 0.6,
+    "ci95": [
+     0.3,
+     0.9
+    ],
+    "tokens_per_q": 2008.6,
+    "input_per_q": 1472.5,
+    "output_per_q": 536.1,
+    "latency_per_q": 1.0424000000000002,
+    "correct_per_Mtok": 298.7155232500249,
+    "truncated_calls": 0,
+    "parse_failures": 0
+   },
+   "multi3": {
+    "accuracy": 0.7,
+    "ci95": [
+     0.4,
+     1.0
+    ],
+    "tokens_per_q": 1982.9,
+    "input_per_q": 1413.8,
+    "output_per_q": 569.1,
+    "latency_per_q": 1.1108,
+    "correct_per_Mtok": 353.01830652075245,
+    "truncated_calls": 0,
+    "parse_failures": 0
+   }
+  },
+  "contrasts": {
+   "multi3-indep3": {
+    "delta": -0.1,
+    "ci95": [
+     -0.3,
+     0.0
+    ],
+    "a_only": 0,
+    "b_only": 1,
+    "p_exact": 1.0
+   },
+   "critique3-indep3": {
+    "delta": -0.2,
+    "ci95": [
+     -0.5,
+     0.0
+    ],
+    "a_only": 0,
+    "b_only": 2,
+    "p_exact": 0.5
+   },
+   "indep3-direct": {
+    "delta": 0.1,
+    "ci95": [
+     0.0,
+     0.3
+    ],
+    "a_only": 1,
+    "b_only": 0,
+    "p_exact": 1.0
+   },
+   "multi3-direct": {
+    "delta": 0.0,
+    "ci95": [
+     0.0,
+     0.0
+    ],
+    "a_only": 0,
+    "b_only": 0,
+    "p_exact": 1.0
+   },
+   "critique3-direct": {
+    "delta": -0.1,
+    "ci95": [
+     -0.3,
+     0.0
+    ],
+    "a_only": 0,
+    "b_only": 1,
+    "p_exact": 1.0
+   },
+   "multi3-critique3": {
+    "delta": 0.1,
+    "ci95": [
+     0.0,
+     0.3
+    ],
+    "a_only": 1,
+    "b_only": 0,
+    "p_exact": 1.0
+   }
+  },
+  "by_category": {
+   "ProtocolQA": {
+    "n": 2,
+    "direct": 1.0,
+    "indep3": 1.0,
+    "critique3": 1.0,
+    "multi3": 1.0,
+    "disagreement_rate": 0.0
+   },
+   "SeqQA": {
+    "n": 2,
+    "direct": 0.5,
+    "indep3": 1.0,
+    "critique3": 0.0,
+    "multi3": 0.5,
+    "disagreement_rate": 0.5
+   },
+   "DbQA": {
+    "n": 2,
+    "direct": 0.5,
+    "indep3": 0.5,
+    "critique3": 0.5,
+    "multi3": 0.5,
+    "disagreement_rate": 0.5
+   },
+   "LitQA2": {
+    "n": 2,
+    "direct": 0.5,
+    "indep3": 0.5,
+    "critique3": 0.5,
+    "multi3": 0.5,
+    "disagreement_rate": 0.0
+   },
+   "SeqQA2": {
+    "n": 2,
+    "direct": 1.0,
+    "indep3": 1.0,
+    "critique3": 1.0,
+    "multi3": 1.0,
+    "disagreement_rate": 0.0
+   }
+  },
+  "disagreement": {
+   "n": 2,
+   "frac": 0.2,
+   "direct": {
+    "rate": 0.0,
+    "n": 2,
+    "k": 0
+   },
+   "indep3": {
+    "rate": 0.5,
+    "n": 2,
+    "k": 1
+   },
+   "critique3": {
+    "rate": 0.0,
+    "n": 2,
+    "k": 0
+   },
+   "multi3": {
+    "rate": 0.0,
+    "n": 2,
+    "k": 0
+   },
+   "unanimous_acc": {
+    "direct": {
+     "rate": 0.875,
+     "n": 8,
+     "k": 7
+    },
+    "indep3": {
+     "rate": 0.875,
+     "n": 8,
+     "k": 7
+    },
+    "critique3": {
+     "rate": 0.75,
+     "n": 8,
+     "k": 6
+    },
+    "multi3": {
+     "rate": 0.875,
+     "n": 8,
+     "k": 7
+    }
+   }
+  },
+  "transitions": {
+   "critique3_vs_indep3": {
+    "rescue": {
+     "rate": 0.0,
+     "n": 2,
+     "k": 0
+    },
+    "corruption": {
+     "rate": 0.25,
+     "n": 8,
+     "k": 2
+    }
+   },
+   "multi3_vs_indep3": {
+    "rescue": {
+     "rate": 0.0,
+     "n": 2,
+     "k": 0
+    },
+    "corruption": {
+     "rate": 0.125,
+     "n": 8,
+     "k": 1
+    }
+   },
+   "direct_vs_indep3": {
+    "rescue": {
+     "rate": 0.0,
+     "n": 2,
+     "k": 0
+    },
+    "corruption": {
+     "rate": 0.125,
+     "n": 8,
+     "k": 1
+    }
+   },
+   "critique_revision": {
+    "rescue": {
+     "rate": 0.0,
+     "n": 3,
+     "k": 0
+    },
+    "corruption": {
+     "rate": 0.14285714285714285,
+     "n": 7,
+     "k": 1
+    },
+    "initial_acc": 0.7
+   },
+   "multi_adjudication": {
+    "scientists_disagree": 2,
+    "researcher_acc": 0.8,
+    "skeptic_acc": 0.7,
+    "adjudicator_acc_when_disagree": {
+     "rate": 0.0,
+     "n": 2,
+     "k": 0
+    },
+    "either_scientist_correct_when_disagree": {
+     "rate": 0.5,
+     "n": 2,
+     "k": 1
+    },
+    "adjudicator_overrides_agreement": 0
+   }
+  },
+  "indep_any_correct": 0.8,
+  "indep_single_sample_acc": 0.7666666666666666
+ },
+ "gemma-4-31b": {
+  "n": 10,
+  "strategies": {
+   "direct": {
+    "accuracy": 0.7,
+    "ci95": [
+     0.4,
+     1.0
+    ],
+    "tokens_per_q": 675.5,
+    "input_per_q": 341.3,
+    "output_per_q": 334.2,
+    "latency_per_q": 42.7236,
+    "correct_per_Mtok": 1036.2694300518135,
+    "truncated_calls": 1,
+    "parse_failures": 1
+   },
+   "indep3": {
+    "accuracy": 0.7,
+    "ci95": [
+     0.4,
+     1.0
+    ],
+    "tokens_per_q": 2016.5,
+    "input_per_q": 1023.9,
+    "output_per_q": 992.6,
+    "latency_per_q": 122.1425,
+    "correct_per_Mtok": 347.1361269526407,
+    "truncated_calls": 3,
+    "parse_failures": 3
+   },
+   "critique3": {
+    "accuracy": 0.8,
+    "ci95": [
+     0.5,
+     1.0
+    ],
+    "tokens_per_q": 2308.5,
+    "input_per_q": 1759.6,
+    "output_per_q": 548.9,
+    "latency_per_q": 105.14770000000001,
+    "correct_per_Mtok": 346.54537578514186,
+    "truncated_calls": 0,
+    "parse_failures": 0
+   },
+   "multi3": {
+    "accuracy": 0.9,
+    "ci95": [
+     0.7,
+     1.0
+    ],
+    "tokens_per_q": 2643.4,
+    "input_per_q": 1774.5,
+    "output_per_q": 868.9,
+    "latency_per_q": 128.4658,
+    "correct_per_Mtok": 340.47060603767875,
+    "truncated_calls": 1,
+    "parse_failures": 0
+   }
+  },
+  "contrasts": {
+   "multi3-indep3": {
+    "delta": 0.2,
+    "ci95": [
+     0.0,
+     0.5
+    ],
+    "a_only": 2,
+    "b_only": 0,
+    "p_exact": 0.5
+   },
+   "critique3-indep3": {
+    "delta": 0.1,
+    "ci95": [
+     0.0,
+     0.3
+    ],
+    "a_only": 1,
+    "b_only": 0,
+    "p_exact": 1.0
+   },
+   "indep3-direct": {
+    "delta": 0.0,
+    "ci95": [
+     0.0,
+     0.0
+    ],
+    "a_only": 0,
+    "b_only": 0,
+    "p_exact": 1.0
+   },
+   "multi3-direct": {
+    "delta": 0.2,
+    "ci95": [
+     0.0,
+     0.5
+    ],
+    "a_only": 2,
+    "b_only": 0,
+    "p_exact": 0.5
+   },
+   "critique3-direct": {
+    "delta": 0.1,
+    "ci95": [
+     0.0,
+     0.3
+    ],
+    "a_only": 1,
+    "b_only": 0,
+    "p_exact": 1.0
+   },
+   "multi3-critique3": {
+    "delta": 0.1,
+    "ci95": [
+     0.0,
+     0.3
+    ],
+    "a_only": 1,
+    "b_only": 0,
+    "p_exact": 1.0
+   }
+  },
+  "by_category": {
+   "ProtocolQA": {
+    "n": 2,
+    "direct": 1.0,
+    "indep3": 1.0,
+    "critique3": 1.0,
+    "multi3": 1.0,
+    "disagreement_rate": 0.0
+   },
+   "SeqQA": {
+    "n": 2,
+    "direct": 0.5,
+    "indep3": 0.5,
+    "critique3": 1.0,
+    "multi3": 1.0,
+    "disagreement_rate": 0.5
+   },
+   "DbQA": {
+    "n": 2,
+    "direct": 0.5,
+    "indep3": 0.5,
+    "critique3": 0.5,
+    "multi3": 0.5,
+    "disagreement_rate": 0.0
+   },
+   "LitQA2": {
+    "n": 2,
+    "direct": 0.5,
+    "indep3": 0.5,
+    "critique3": 0.5,
+    "multi3": 1.0,
+    "disagreement_rate": 0.5
+   },
+   "SeqQA2": {
+    "n": 2,
+    "direct": 1.0,
+    "indep3": 1.0,
+    "critique3": 1.0,
+    "multi3": 1.0,
+    "disagreement_rate": 0.0
+   }
+  },
+  "disagreement": {
+   "n": 2,
+   "frac": 0.2,
+   "direct": {
+    "rate": 0.0,
+    "n": 2,
+    "k": 0
+   },
+   "indep3": {
+    "rate": 0.0,
+    "n": 2,
+    "k": 0
+   },
+   "critique3": {
+    "rate": 0.5,
+    "n": 2,
+    "k": 1
+   },
+   "multi3": {
+    "rate": 1.0,
+    "n": 2,
+    "k": 2
+   },
+   "unanimous_acc": {
+    "direct": {
+     "rate": 0.875,
+     "n": 8,
+     "k": 7
+    },
+    "indep3": {
+     "rate": 0.875,
+     "n": 8,
+     "k": 7
+    },
+    "critique3": {
+     "rate": 0.875,
+     "n": 8,
+     "k": 7
+    },
+    "multi3": {
+     "rate": 0.875,
+     "n": 8,
+     "k": 7
+    }
+   }
+  },
+  "transitions": {
+   "critique3_vs_indep3": {
+    "rescue": {
+     "rate": 0.3333333333333333,
+     "n": 3,
+     "k": 1
+    },
+    "corruption": {
+     "rate": 0.0,
+     "n": 7,
+     "k": 0
+    }
+   },
+   "multi3_vs_indep3": {
+    "rescue": {
+     "rate": 0.6666666666666666,
+     "n": 3,
+     "k": 2
+    },
+    "corruption": {
+     "rate": 0.0,
+     "n": 7,
+     "k": 0
+    }
+   },
+   "direct_vs_indep3": {
+    "rescue": {
+     "rate": 0.0,
+     "n": 3,
+     "k": 0
+    },
+    "corruption": {
+     "rate": 0.0,
+     "n": 7,
+     "k": 0
+    }
+   },
+   "critique_revision": {
+    "rescue": {
+     "rate": 0.0,
+     "n": 2,
+     "k": 0
+    },
+    "corruption": {
+     "rate": 0.0,
+     "n": 8,
+     "k": 0
+    },
+    "initial_acc": 0.8
+   },
+   "multi_adjudication": {
+    "scientists_disagree": 3,
+    "researcher_acc": 0.8,
+    "skeptic_acc": 0.8,
+    "adjudicator_acc_when_disagree": {
+     "rate": 0.6666666666666666,
+     "n": 3,
+     "k": 2
+    },
+    "either_scientist_correct_when_disagree": {
+     "rate": 0.6666666666666666,
+     "n": 3,
+     "k": 2
+    },
+    "adjudicator_overrides_agreement": 0
+   }
+  },
+  "indep_any_correct": 0.8,
+  "indep_single_sample_acc": 0.7333333333333333
+ },
+ "flash-lite": {
+  "n": 10,
+  "strategies": {
+   "direct": {
+    "accuracy": 0.9,
+    "ci95": [
+     0.7,
+     1.0
+    ],
+    "tokens_per_q": 639.5,
+    "input_per_q": 341.3,
+    "output_per_q": 298.2,
+    "latency_per_q": 1.6021,
+    "correct_per_Mtok": 1407.3494917904613,
+    "truncated_calls": 0,
+    "parse_failures": 0
+   },
+   "indep3": {
+    "accuracy": 0.9,
+    "ci95": [
+     0.7,
+     1.0
+    ],
+    "tokens_per_q": 1992.6,
+    "input_per_q": 1023.9,
+    "output_per_q": 968.7,
+    "latency_per_q": 4.944500000000001,
+    "correct_per_Mtok": 451.6711833785004,
+    "truncated_calls": 3,
+    "parse_failures": 0
+   },
+   "critique3": {
+    "accuracy": 0.7,
+    "ci95": [
+     0.4,
+     1.0
+    ],
+    "tokens_per_q": 1829.3,
+    "input_per_q": 1320.0,
+    "output_per_q": 509.3,
+    "latency_per_q": 4.311999999999999,
+    "correct_per_Mtok": 382.66003389274584,
+    "truncated_calls": 1,
+    "parse_failures": 0
+   },
+   "multi3": {
+    "accuracy": 1.0,
+    "ci95": [
+     1.0,
+     1.0
+    ],
+    "tokens_per_q": 2354.5,
+    "input_per_q": 1281.5,
+    "output_per_q": 1073.0,
+    "latency_per_q": 7.6968000000000005,
+    "correct_per_Mtok": 424.71862391165854,
+    "truncated_calls": 1,
+    "parse_failures": 0
+   }
+  },
+  "contrasts": {
+   "multi3-indep3": {
+    "delta": 0.1,
+    "ci95": [
+     0.0,
+     0.3
+    ],
+    "a_only": 1,
+    "b_only": 0,
+    "p_exact": 1.0
+   },
+   "critique3-indep3": {
+    "delta": -0.2,
+    "ci95": [
+     -0.5,
+     0.0
+    ],
+    "a_only": 0,
+    "b_only": 2,
+    "p_exact": 0.5
+   },
+   "indep3-direct": {
+    "delta": 0.0,
+    "ci95": [
+     -0.3,
+     0.3
+    ],
+    "a_only": 1,
+    "b_only": 1,
+    "p_exact": 1.0
+   },
+   "multi3-direct": {
+    "delta": 0.1,
+    "ci95": [
+     0.0,
+     0.3
+    ],
+    "a_only": 1,
+    "b_only": 0,
+    "p_exact": 1.0
+   },
+   "critique3-direct": {
+    "delta": -0.2,
+    "ci95": [
+     -0.5,
+     0.0
+    ],
+    "a_only": 0,
+    "b_only": 2,
+    "p_exact": 0.5
+   },
+   "multi3-critique3": {
+    "delta": 0.3,
+    "ci95": [
+     0.0,
+     0.6
+    ],
+    "a_only": 3,
+    "b_only": 0,
+    "p_exact": 0.25
+   }
+  },
+  "by_category": {
+   "ProtocolQA": {
+    "n": 2,
+    "direct": 1.0,
+    "indep3": 1.0,
+    "critique3": 1.0,
+    "multi3": 1.0,
+    "disagreement_rate": 0.0
+   },
+   "SeqQA": {
+    "n": 2,
+    "direct": 0.5,
+    "indep3": 0.5,
+    "critique3": 0.0,
+    "multi3": 1.0,
+    "disagreement_rate": 0.5
+   },
+   "DbQA": {
+    "n": 2,
+    "direct": 1.0,
+    "indep3": 1.0,
+    "critique3": 1.0,
+    "multi3": 1.0,
+    "disagreement_rate": 0.0
+   },
+   "LitQA2": {
+    "n": 2,
+    "direct": 1.0,
+    "indep3": 1.0,
+    "critique3": 0.5,
+    "multi3": 1.0,
+    "disagreement_rate": 0.0
+   },
+   "SeqQA2": {
+    "n": 2,
+    "direct": 1.0,
+    "indep3": 1.0,
+    "critique3": 1.0,
+    "multi3": 1.0,
+    "disagreement_rate": 0.0
+   }
+  },
+  "disagreement": {
+   "n": 1,
+   "frac": 0.1,
+   "direct": {
+    "rate": 1.0,
+    "n": 1,
+    "k": 1
+   },
+   "indep3": {
+    "rate": 0.0,
+    "n": 1,
+    "k": 0
+   },
+   "critique3": {
+    "rate": 0.0,
+    "n": 1,
+    "k": 0
+   },
+   "multi3": {
+    "rate": 1.0,
+    "n": 1,
+    "k": 1
+   },
+   "unanimous_acc": {
+    "direct": {
+     "rate": 0.8888888888888888,
+     "n": 9,
+     "k": 8
+    },
+    "indep3": {
+     "rate": 1.0,
+     "n": 9,
+     "k": 9
+    },
+    "critique3": {
+     "rate": 0.7777777777777778,
+     "n": 9,
+     "k": 7
+    },
+    "multi3": {
+     "rate": 1.0,
+     "n": 9,
+     "k": 9
+    }
+   }
+  },
+  "transitions": {
+   "critique3_vs_indep3": {
+    "rescue": {
+     "rate": 0.0,
+     "n": 1,
+     "k": 0
+    },
+    "corruption": {
+     "rate": 0.2222222222222222,
+     "n": 9,
+     "k": 2
+    }
+   },
+   "multi3_vs_indep3": {
+    "rescue": {
+     "rate": 1.0,
+     "n": 1,
+     "k": 1
+    },
+    "corruption": {
+     "rate": 0.0,
+     "n": 9,
+     "k": 0
+    }
+   },
+   "direct_vs_indep3": {
+    "rescue": {
+     "rate": 1.0,
+     "n": 1,
+     "k": 1
+    },
+    "corruption": {
+     "rate": 0.1111111111111111,
+     "n": 9,
+     "k": 1
+    }
+   },
+   "critique_revision": {
+    "rescue": {
+     "rate": null,
+     "n": 0,
+     "k": 0
+    },
+    "corruption": {
+     "rate": 0.3,
+     "n": 10,
+     "k": 3
+    },
+    "initial_acc": 1.0
+   },
+   "multi_adjudication": {
+    "scientists_disagree": 2,
+    "researcher_acc": 0.9,
+    "skeptic_acc": 0.9,
+    "adjudicator_acc_when_disagree": {
+     "rate": 1.0,
+     "n": 2,
+     "k": 2
+    },
+    "either_scientist_correct_when_disagree": {
+     "rate": 1.0,
+     "n": 2,
+     "k": 2
+    },
+    "adjudicator_overrides_agreement": 0
+   }
+  },
+  "indep_any_correct": 1.0,
+  "indep_single_sample_acc": 0.9333333333333332
+ }
+}
