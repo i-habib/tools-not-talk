@@ -47,8 +47,8 @@ We then ask what actually moves accuracy on biology research tasks: orchestratio
 \paragraph{Contributions.}
 \begin{itemize}
 \setlength\itemsep{0pt}
-\item \textbf{Orchestration adds little at matched compute.} Across three models, self-critique never beats voting and repairs no more answers than it breaks. Debate helps only when the model cannot reason on its own. Raising reasoning effort, for six model families, rarely helps either (\S\ref{sec:orch}--\ref{sec:think}).
-\item \textbf{The question decides.} Every system solves the same questions and fails the same questions. Question identity explains \ItemShareMain\% of the variance in correctness and the system \ArmShareMain\% (\S\ref{sec:ceiling}).
+\item \textbf{Orchestration adds little at matched compute.} Across three models, self-critique never beats voting and breaks at least as many answers as it repairs. Debate helps only when the model cannot reason on its own. Raising reasoning effort, for six model families, rarely helps either (\S\ref{sec:orch}--\ref{sec:think}).
+\item \textbf{The question decides.} Systems largely solve the same questions and fail the same questions. Question identity explains \ItemShareMain\% of the variance in correctness and the system \ArmShareMain\% (\S\ref{sec:ceiling}).
 \item \textbf{Tools break the ceiling.} One tool-using call solves \ToolsYesUnsolved\% of the questions that no main-study system solved, and more compute on top of tools adds comparatively little (\S\ref{sec:tools}).
 \end{itemize}
 
@@ -100,9 +100,9 @@ The damage is worst on exact sequence manipulation (SeqQA: \CritMinusVoteSeqQAOS
 \end{figure}
 
 \subsection{Longer reasoning does not substitute for knowledge}\label{sec:think}
-Raising reasoning effort multiplies the cost without moving accuracy (Fig.~\ref{fig:tvt}).
+For most models, raising reasoning effort multiplies the cost without moving accuracy (Fig.~\ref{fig:tvt}).
 GPT-OSS at high effort generates \TokRatioOSS$\times$ more tokens and scores \TDirectHighOSS\% against \TDirectLowOSS\%; Flash-Lite spends \TokRatioLite$\times$ more tokens and scores \TDirectHighLite\% against \TDirectLowLite\%.
-The one model that gains is GPT-6 Luna, which uses no reasoning tokens at low effort, and it gains only up to the level its low-effort debate had already reached (\TDirectHighLuna\% vs.\ \TDebateLowLuna\%).
+The one model that gains is GPT-6 Luna, which uses no reasoning tokens at low effort, and its high-effort single call reaches exactly the accuracy its low-effort debate already had (\TDirectHighLuna\%).
 Debate and reasoning are therefore substitutes, and neither gets past the plateau.
 Stacking orchestration on high effort adds little: GPT-6 Sol scores \TDirectHighSol\% with every strategy while the three-call strategies generate ${\sim}3\times$ the tokens.
 
@@ -117,7 +117,7 @@ Stacking orchestration on high effort adds little: GPT-6 Sol scores \TDirectHigh
 A two-way decomposition of the correctness matrix attributes \ItemShareMain\% of the variance to the question and \ArmShareMain\% to the system (Fig.~\ref{fig:ceiling}).
 The pattern holds across all \NArmsThirty{} model, strategy and effort configurations on the shared subset, frontier models at high effort included (\ItemShareThirty\% vs.\ \ArmShareThirty\%).
 Systems largely solve the same easy questions and fail the same hard ones.
-The \NUnsolved{} questions that no system solves are dominated by literature and database recall (\NUnsolvedRecall{}) and open-ended sequence computation (\NUnsolvedSeqQAII{}).
+The \NUnsolved{} questions that no main-study system solves are dominated by literature and database recall (\NUnsolvedRecall{}) and open-ended sequence computation (\NUnsolvedSeqQAII{}).
 These are failures of knowledge, which additional deliberation did not supply in any configuration we tested.
 
 \subsection{Tools break the ceiling}\label{sec:tools}

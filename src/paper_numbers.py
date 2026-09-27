@@ -139,6 +139,24 @@ def main():
             add(f"Tools{A_}P{K}", "??" if not v else f"{v['mcnemar']['p_exact']:.2g}")
             add(f"Tools{A_}Tok{K}", f"{v['tokens_tools']:,.0f}" if v else "??")
     add("ToolsLeaks", ta.get("n_leak_flagged", "??"))
+    gt = json.loads((AN / "gemma_think.json").read_text()) if (AN / "gemma_think.json").exists() else {}
+    add("GThinkN", gt.get("n", "??"))
+    for tag, T in [("off", "Off"), ("on", "On")]:
+        v = gt.get(tag, {})
+        for s_, S_ in [("direct", "Direct"), ("indep3", "Vote"), ("multi3", "Debate")]:
+            add(f"GThink{S_}{T}", pct(v.get(s_), 0) if v else "??")
+            add(f"GThinkTok{S_}{T}", f"{v['tokens'][s_]:,.0f}" if v else "??")
+        c = v.get("debate_minus_vote") if v else None
+        add(f"GThinkDMV{T}", pp(c and c["delta"], 0))
+        add(f"GThinkDMV{T}Lo", pp(c and c["ci95"][0], 0))
+        add(f"GThinkDMV{T}Hi", pp(c and c["ci95"][1], 0))
+        add(f"GThinkDMV{T}P", "??" if not c else f"{c['p_exact']:.2g}")
+    for k, K in [("direct_on_minus_off", "DirectGain"), ("direct_on_minus_debate_off", "DirectOnMinusDebateOff")]:
+        c = gt.get(k)
+        add(f"GThink{K}", pp(c and c["delta"], 0))
+        add(f"GThink{K}Lo", pp(c and c["ci95"][0], 0))
+        add(f"GThink{K}Hi", pp(c and c["ci95"][1], 0))
+        add(f"GThink{K}P", "??" if not c else f"{c['p_exact']:.2g}")
     add("ToolsSearches", ta.get("tool_calls", {}).get("web_search", "??"))
     add("ToolsExecs", ta.get("tool_calls", {}).get("command_execution", "??"))
     (PAPER / "numbers.tex").write_text("\n".join(L) + "\n")
