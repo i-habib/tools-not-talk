@@ -122,7 +122,7 @@ def main():
         add(f"ToolsD{K}", pp(v and v["delta"], 0))
         add(f"ToolsD{K}Lo", pp(v and v["ci95"][0], 0))
         add(f"ToolsD{K}Hi", pp(v and v["ci95"][1], 0))
-        add(f"ToolsP{K}", "??" if not v else ("<0.001" if v["mcnemar"]["p_exact"] < 0.001 else f"{v['mcnemar']['p_exact']:.2g}"))
+        add(f"ToolsP{K}", "??" if not v else f"{v['mcnemar']['p_exact']:.1g}" if v["mcnemar"]["p_exact"] < 0.001 else f"{v['mcnemar']['p_exact']:.2g}")
         add(f"ToolsUse{K}", pct(v and v["tool_use_rate"], 0))
         add(f"ToolsTok{K}", f"{v['tokens_tools']:,.0f}" if v else "??")
         for c, C in [("LitQA2", "Lit"), ("DbQA", "Db"), ("SeqQA2", "SeqQAII")]:

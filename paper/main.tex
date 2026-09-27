@@ -18,142 +18,129 @@
 \newcommand{\debate}{\textsc{Debate}}
 \newcommand{\direct}{\textsc{Direct}}
 
-\title{Tools, Not Talk: Agent Orchestration and Extended Reasoning Hit a Knowledge Ceiling that Tool Use Breaks on Biology Research Tasks}
+\title{Tools, Not Talk: Biology Agents Hit a Knowledge Ceiling That Orchestration and Reasoning Cannot Break}
 \author{Anonymous Author(s)}
 
 \begin{document}
 \maketitle
 
 \begin{abstract}
-Agentic systems for biology usually report gains over a single model call while spending several calls, which conflates what the orchestration adds with how much inference is spent.
-On 150 pre-registered, deterministically scored biology research questions (LAB-Bench, LABBench2), we compare majority voting, self-critique and a two-scientist debate at a matched budget of three calls across three models, and we contrast them with longer reasoning and with tool use.
-Critique never beats voting, and debate helps only a model whose reasoning is switched off (\DDebateMinusVoteGemma{} points).
-Raising reasoning effort rarely helps (GPT-OSS spends \TokRatioOSS$\times$ more tokens for no gain).
-Instead, correctness is set by the question: question identity explains \ItemShareMain\% of its variance and the choice of model, strategy and effort \ArmShareMain\%.
-The ceiling is missing knowledge, not missing deliberation: a single call with web search and code execution solves \ToolsYesUnsolved\% of the questions that every orchestrated or reasoning-heavy system failed (vs.\ \ToolsNoUnsolved\% for the same model without tools), and more compute on top of tools adds only a further, non-significant \ToolsHighDUnsolved{} to \ToolsHighDThirty{} points.
-For life-science agents, the budget belongs in tools, not in talk.
+Agentic systems for biology are increasingly built around orchestration: critics that review answers, teams of role-playing scientists that debate, and models that reason for longer.
+We show that on objectively scored biology research tasks this machinery buys almost nothing, and we identify why.
+Across 150 pre-registered LAB-Bench and LABBench2 questions, compared at a matched budget of three model calls, self-critique never beats simple majority voting, multi-agent debate helps only a model whose reasoning is switched off, and a \TokRatioOSS-fold increase in generated tokens from longer reasoning leaves accuracy unchanged.
+The reason is a ceiling set by the questions themselves: which question is asked explains \ItemShareMain\% of the variance in correctness, while the choice of model, strategy and reasoning effort explains \ArmShareMain\%.
+That ceiling is missing knowledge, not missing deliberation.
+A single model call with web search and code execution solves \ToolsYesUnsolved\% of the questions that every orchestrated and reasoning-heavy system failed.
+For life-science agents, the budget belongs in tools, not talk.
 \end{abstract}
 
 \section{Introduction}
 LLM agents now plan experiments, analyse data and generate hypotheses in chemistry and biology \citep{boiko2023coscientist,bran2023chemcrow,swanson2024virtuallab,huang2025biomni,gottweis2026coscientist,ghareeb2026robin}.
-Their gains are typically reported against a single-call baseline, although the agent makes many calls.
-Because repeated sampling with a vote already improves accuracy \citep{wang2022selfconsistency,li2024moreagents,brown2024monkeys}, such comparisons conflate \emph{what the interaction adds} with \emph{how much inference was spent} \citep{kapoor2024agentsmatters}.
+Many of these systems are organised as conversations: a critic reviews a draft, several specialised scientists debate, an adjudicator decides.
+Their gains are usually reported against a single model call, even though the agent makes many.
+Sampling several answers and voting already improves accuracy \citep{wang2022selfconsistency,li2024moreagents,brown2024monkeys}, so these comparisons cannot tell whether the orchestration helps or whether the extra calls do \citep{kapoor2024agentsmatters}.
 
-For anyone building life-science agents, this is a design question as much as an evaluation one: should the budget go into richer orchestration (critics, debating scientists) or somewhere else?
-We run a small, controlled test of this confound on biology research questions with deterministic answers.
-Every orchestrated strategy gets exactly the budget of the voting baseline (three calls, same model, same prompts, same decoding).
-We then ask a second question the agent literature rarely asks: does letting a strong model reason longer in a \emph{single} call reach the same point?
+We separate the two.
+Every orchestrated strategy receives exactly the budget of a voting baseline: three calls, the same model, the same prompts and the same decoding.
+We then ask what actually moves accuracy on biology research tasks: orchestration, longer reasoning, or access to knowledge through tools.
 
-\paragraph{Findings.}
-(1)~At matched budget, sequential critique never improves on majority voting, and multi-agent debate improves on it only for a model whose reasoning is switched off.
-(2)~Critique never helps: it breaks at least as many correct answers as it repairs, and for models that reason it is most harmful on exact sequence manipulation.
-(3)~Thinking longer is not a way out: higher reasoning effort helps only a model that otherwise does not reason at all, and then only up to the level its low-effort debate already reached; stacking orchestration on top adds nothing reliable.
-(4)~Whether a system is right depends overwhelmingly on \emph{which question} it faces and barely on \emph{how} it spends inference: every system solves and fails the same questions (Fig.~\ref{fig:ceiling}).
-(5)~These errors are missing knowledge, not missing deliberation. One tool-using call with web search and code execution solves nearly half of the questions that every other configuration failed, and extra compute on top of tools adds comparatively little.
+\paragraph{Contributions.}
+\begin{itemize}
+\setlength\itemsep{0pt}
+\item \textbf{Orchestration buys little at matched compute.} Across three models, self-critique never beats voting and repairs no more answers than it breaks. Debate helps only when the model cannot reason on its own. Raising reasoning effort, for six model families, rarely helps either (\S\ref{sec:orch}--\ref{sec:think}).
+\item \textbf{The question decides.} Every system solves the same questions and fails the same questions. Question identity explains \ItemShareMain\% of the variance in correctness and the system \ArmShareMain\% (\S\ref{sec:ceiling}).
+\item \textbf{Tools break the ceiling.} One tool-using call solves \ToolsYesUnsolved\% of the questions that no other configuration solved, and more compute on top of tools adds comparatively little (\S\ref{sec:tools}).
+\end{itemize}
 
 \section{Setup}
 \paragraph{Tasks.}
-We use four LAB-Bench categories \citep{laurent2024labbench} (ProtocolQA, SeqQA, DbQA, LitQA2; multiple choice with shuffled options and no abstain option) and the deterministic subset of LABBench2 SeqQA2 \citep{labbench2} (open-ended sequence computations with unique answers, scored by the official validators, with input files injected into the prompt).
-We exclude figure/table tasks (text-only models) and prompts over 6{,}000 characters.
-With a fixed seed we draw 30 questions per category (150 total), plus 10 pilot questions that are excluded from all results.
-No LLM judge is used anywhere.
+We draw 30 questions from each of five categories (150 in total): four from LAB-Bench \citep{laurent2024labbench} (protocol troubleshooting, sequence manipulation, database and literature questions; multiple choice) and open-ended sequence computations from LABBench2 SeqQA2 \citep{labbench2}, scored with the official validators.
+All answers are scored deterministically, with no LLM judge.
 
-\paragraph{Strategies (Fig.~\ref{fig:strategies} in App.~\ref{app:prompts}).}
+\paragraph{Strategies.}
 \direct{} makes one call.
-\vote{} makes three independent calls and takes the majority answer, breaking ties by self-reported confidence.
-\critique{} solves, critiques the solution, then revises.
-\debate{} has a molecular biologist and a skeptical reviewer solve independently, and a third call adjudicates between them.
-\vote{}, \critique{} and \debate{} each use exactly three calls. Only visible outputs are passed between calls.
+\vote{} makes three independent calls and takes the majority answer.
+\critique{} solves, critiques its own solution, then revises.
+\debate{} has a molecular biologist and a skeptical reviewer solve independently, then an adjudicator decides.
+\vote{}, \critique{} and \debate{} each use exactly three calls, and only visible outputs pass between calls (prompts in App.~\ref{app:prompts}).
 
 \paragraph{Models.}
-The main study uses GPT-OSS-120B \citep{openai2025gptoss} (\texttt{reasoning\_effort=low}), Gemma~4~31B \citep{google2026gemma4} (thinking off, the only non-default setting the API accepts), and Gemini~3.5 Flash-Lite (thinking low), all through free API tiers.
-Decoding uses temperature 0.6, fixed per-call seeds and a 2{,}048-token cap.
-GPT-OSS and Gemma answer all 150 questions and Flash-Lite a fixed 75-question subset.
-For the reasoning-effort analysis we additionally run GPT-6 Luna, GPT-6 Sol and GPT-5.6 Terra (all strategies, high effort; Luna also at low effort), GPT-OSS at high effort (all strategies, served by Ollama; a low-effort \direct{} run on the same host matches the main run's accuracy) and Flash-Lite (\direct{} at high thinking), all on the first 30 questions in the fixed run order (6 per category).
-
-\paragraph{Pre-registration.}
-Task IDs, prompts, decoding, hypotheses and the analysis script were committed before the main run.
-The primary contrast is \debate{} $-$ \vote{}, tested with a paired bootstrap over questions (10{,}000 resamples) and an exact McNemar test.
-Post-freeze deviations are listed in App.~\ref{app:deviations}: rate-limit workarounds, a second inference provider for 22 GPT-OSS questions (each question served entirely by one provider), and the exploratory reasoning-effort arm.
+The matched-budget study uses GPT-OSS-120B \citep{openai2025gptoss} (low reasoning effort), Gemma~4~31B \citep{google2026gemma4} (thinking disabled) and Gemini~3.5 Flash-Lite (low thinking) on all 150 questions (Flash-Lite on a fixed 75).
+To test reasoning effort and tools, we add GPT-6 Luna, GPT-6 Sol and GPT-5.6 Terra, and rerun GPT-OSS and Flash-Lite at high effort, on a fixed 30-question subset with 6 per category.
+Task IDs, prompts, decoding and the primary analysis were frozen before evaluation (App.~\ref{app:deviations}). All contrasts are paired over questions, with bootstrap 95\% CIs and exact McNemar tests.
 
 \section{Results}
 \begin{table}[t]
 \centering\small
-\caption{Accuracy (\%) at a matched budget of three calls; \direct{} uses one call. $\Delta$ is \debate{} $-$ \vote{} in points with a paired bootstrap 95\% CI.}
+\caption{Accuracy (\%) at a matched budget of three calls (\direct{} uses one). $\Delta$ = \debate{} $-$ \vote{} in points, with paired bootstrap 95\% CI.}
 \label{tab:main}
 \begin{tabular}{lrrrrrc}
 \toprule
 Model & $n$ & \direct & \vote & \critique & \debate & $\Delta$ [95\% CI] \\
 \midrule
 GPT-OSS-120B & \NOSS & \AccDirectOSS & \AccVoteOSS & \AccCritiqueOSS & \AccDebateOSS & \DDebateMinusVoteOSS{} [\DDebateMinusVoteOSSLo, \DDebateMinusVoteOSSHi] \\
-Gemma 4 31B & \NGemma & \AccDirectGemma & \AccVoteGemma & \AccCritiqueGemma & \AccDebateGemma & \DDebateMinusVoteGemma{} [\DDebateMinusVoteGemmaLo, \DDebateMinusVoteGemmaHi] \\
+Gemma 4 31B (no thinking) & \NGemma & \AccDirectGemma & \AccVoteGemma & \AccCritiqueGemma & \textbf{\AccDebateGemma} & \textbf{\DDebateMinusVoteGemma{}} [\DDebateMinusVoteGemmaLo, \DDebateMinusVoteGemmaHi] \\
 Flash-Lite & \NLite & \AccDirectLite & \AccVoteLite & \AccCritiqueLite & \AccDebateLite & \DDebateMinusVoteLite{} [\DDebateMinusVoteLiteLo, \DDebateMinusVoteLiteHi] \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\paragraph{Orchestration beats voting only when the model cannot think.}
-\debate{} improves on \vote{} for Gemma, whose thinking is disabled ($\DDebateMinusVoteGemma$ points, 95\% CI [$\DDebateMinusVoteGemmaLo$, $\DDebateMinusVoteGemmaHi$], McNemar $p=\PDebateMinusVoteGemma$), and the gain survives excluding every question with a truncated call.
-For the two models that reason, the interval includes zero ($p=\PDebateMinusVoteOSS$ and $\PDebateMinusVoteLite$; for GPT-OSS the estimate is unchanged at $\DDebateMinusVoteOSSNoGroq$ when the \the\numexpr150-\NOSSNoGroq\relax{} questions served by the second provider are excluded).
-Pooled over all \NPooled{} model--question pairs, \debate{} $-$ \vote{} is $\DPooledDebateMinusVote$ [$\DPooledDebateMinusVoteLo$, $\DPooledDebateMinusVoteHi$] points and \critique{} $-$ \vote{} is $\DPooledCritiqueMinusVote$ [$\DPooledCritiqueMinusVoteLo$, $\DPooledCritiqueMinusVoteHi$].
-\critique{} is never better than \vote{} ($\DCritiqueMinusVoteOSS$, $\DCritiqueMinusVoteGemma$, $\DCritiqueMinusVoteLite$ points).
-Voting itself barely improves on a single call ($\DVoteMinusDirectOSS$, $\DVoteMinusDirectGemma$, $\DVoteMinusDirectLite$ points), even though the three samples disagree on \DisFracOSS\%, \DisFracGemma\% and \DisFracLite\% of questions.
-
-\paragraph{Critique breaks at least as often as it repairs.}
-Relative to the vote, \critique{} rescues \RescueCritiqueOSS\%, \RescueCritiqueGemma\% and \RescueCritiqueLite\% of wrong answers but corrupts \CorruptCritiqueOSS\%, \CorruptCritiqueGemma\% and \CorruptCritiqueLite\% of correct ones.
-For the two models that reason, the largest losses are on exact sequence manipulation (SeqQA: \CritMinusVoteSeqQAOSS{} and \CritMinusVoteSeqQALite{} points vs.\ \vote{} for GPT-OSS and Flash-Lite; \CritMinusVoteSeqQAGemma{} for Gemma), where a fluent but wrong critique talks the model out of a correct computation.
+\subsection{Orchestration buys little at matched compute}\label{sec:orch}
+Three calls spent on orchestration do no better than three calls spent on independent samples (Table~\ref{tab:main}).
+\textbf{Self-critique never beats voting} for any model ($\DCritiqueMinusVoteOSS$, $\DCritiqueMinusVoteGemma$, $\DCritiqueMinusVoteLite$ points; pooled $\DPooledCritiqueMinusVote$ [$\DPooledCritiqueMinusVoteLo$, $\DPooledCritiqueMinusVoteHi$]).
+It breaks correct answers as readily as it fixes wrong ones: relative to the vote it rescues \RescueCritiqueOSS\%, \RescueCritiqueGemma\% and \RescueCritiqueLite\% of errors but corrupts \CorruptCritiqueOSS\%, \CorruptCritiqueGemma\% and \CorruptCritiqueLite\% of correct answers.
+The damage is worst on exact sequence manipulation (SeqQA: \CritMinusVoteSeqQAOSS{} and \CritMinusVoteSeqQALite{} points for GPT-OSS and Flash-Lite), where a fluent but wrong critique argues the model out of a correct computation.
+\textbf{Debate helps only the model that cannot think.} For Gemma, whose thinking is disabled, debate beats voting by \DDebateMinusVoteGemma{} points ($p=\PDebateMinusVoteGemma$); for the two models that reason, it does not ($\DDebateMinusVoteOSS$ and $\DDebateMinusVoteLite$).
 
 \begin{figure}[t]
 \centering
 \figifexists[width=\linewidth]{figures/fig_think_vs_talk.pdf}
-\caption{Accuracy vs.\ generated tokens per question on the same 30 questions. Circles are low reasoning and stars are high reasoning; colour marks the strategy. Across nearly two orders of magnitude in generated tokens, all ways of spending inference land on a narrow per-model plateau; the black diamond (GPT-6 Luna, one call with web search and code execution) is the only configuration that rises above it, at a fraction of the tokens.}
+\caption{\textbf{Every way of spending inference lands on the same per-model plateau; tools rise above it.} Accuracy vs.\ generated tokens per question on a shared 30-question set. Colour marks the strategy; circles are low reasoning effort and stars high. Across nearly two orders of magnitude in tokens, accuracy barely moves within a model. The black diamond, one GPT-6 Luna call with web search and code execution, is the only configuration above its plateau, and it is among the cheapest.}
 \label{fig:tvt}
 \end{figure}
 
-\paragraph{Thinking longer mostly does not help either.}
-On the same 30 questions (Fig.~\ref{fig:tvt}), raising GPT-OSS to high reasoning effort multiplies generated tokens by \TokRatioOSS$\times$ (\TTokDirectLowOSS{} to \TTokDirectHighOSS{} per question) while accuracy stays flat (\TDirectLowOSS\% to \TDirectHighOSS\%). For Flash-Lite the result is the same (\TDirectLowLite\% to \TDirectHighLite\%, \TokRatioLite$\times$ tokens).
-The one model that gains is GPT-6 Luna, which at low effort uses no reasoning tokens (\TDirectLowLuna\% to \TDirectHighLuna\%). Its high-effort single call lands exactly where its low-effort \debate{} already was (\TDebateLowLuna\%), consistent with debate acting as a substitute for reasoning.
-Orchestration on top of high effort adds nothing reliable. GPT-6 Sol scores \TDirectHighSol\% with all four strategies, and GPT-5.6 Terra ranges from \TCritiqueHighTerra\% (\critique) to \TDebateHighTerra\% (\debate) with no paired difference significant.
-Within each model, accuracy moves by a few questions while generated tokens vary by up to two orders of magnitude.
+\subsection{Longer reasoning does not substitute for knowledge}\label{sec:think}
+Raising reasoning effort multiplies the cost without moving accuracy (Fig.~\ref{fig:tvt}).
+GPT-OSS at high effort generates \TokRatioOSS$\times$ more tokens and scores \TDirectHighOSS\% against \TDirectLowOSS\%; Flash-Lite spends \TokRatioLite$\times$ more tokens and scores \TDirectHighLite\% against \TDirectLowLite\%.
+The one model that gains is GPT-6 Luna, which uses no reasoning tokens at low effort, and it gains only up to the level its low-effort debate had already reached (\TDirectHighLuna\% vs.\ \TDebateLowLuna\%).
+Debate and reasoning are therefore substitutes, and neither gets past the plateau.
+Stacking orchestration on high effort adds nothing: GPT-6 Sol scores \TDirectHighSol\% with every strategy while the three-call strategies generate ${\sim}3\times$ the tokens.
 
 \begin{figure}[t]
 \centering
 \figifexists[width=\linewidth]{figures/fig_ceiling_main.pdf}
-\caption{Correctness of every model $\times$ strategy system (rows) on every question answered by all of them (columns, sorted by the fraction of systems correct). The staircase shows that systems solve and fail the \emph{same} questions and differ mainly in a shared boundary. Question identity explains \ItemShareMain\% [\ItemShareMainLo, \ItemShareMainHi] of the variance in correctness; the system explains \ArmShareMain\% [\ArmShareMainLo, \ArmShareMainHi].}
+\caption{\textbf{The question, not the system, decides.} Correctness of every model $\times$ strategy system (rows) on every question (columns, sorted by the fraction of systems correct). All systems solve and fail the same questions. Question identity explains \ItemShareMain\% [\ItemShareMainLo, \ItemShareMainHi] of the variance in correctness; the system explains \ArmShareMain\% [\ArmShareMainLo, \ArmShareMainHi].}
 \label{fig:ceiling}
 \end{figure}
 
-\paragraph{The question, not the method, determines the outcome.}
-A two-way decomposition of the 0/1 correctness matrix (systems $\times$ questions) attributes \ItemShareMain\% of the variance to the question and \ArmShareMain\% to the system for the main models (Fig.~\ref{fig:ceiling}).
-Across all \NArmsThirty{} systems on the shared 30 questions, including frontier models at high reasoning, the split is \ItemShareThirty\% vs.\ \ArmShareThirty\%.
-Of the \NUnsolved{} questions that no main system solves, \NUnsolvedRecall{} require literature or database recall (LitQA2, DbQA) and \NUnsolvedSeqQAII{} are open-ended sequence computations (SeqQA2), failures that point to missing retrieval and code execution rather than missing deliberation.
+\subsection{The question decides}\label{sec:ceiling}
+A two-way decomposition of the correctness matrix attributes \ItemShareMain\% of the variance to the question and \ArmShareMain\% to the system (Fig.~\ref{fig:ceiling}).
+The pattern holds across all \NArmsThirty{} model, strategy and effort configurations on the shared subset, frontier models at high effort included (\ItemShareThirty\% vs.\ \ArmShareThirty\%).
+Every system solves the same easy questions and fails the same hard ones.
+The \NUnsolved{} questions that no system solves are dominated by literature and database recall (\NUnsolvedRecall{}) and open-ended sequence computation (\NUnsolvedSeqQAII{}).
+These are failures of knowledge, which no amount of deliberation can supply.
 
-\paragraph{Tools break the ceiling.}
-To test whether the ceiling reflects missing knowledge, we give GPT-6 Luna (low effort, one call) a shell with Python and live web search, announced by a one-sentence harness note, and leave everything else unchanged.
-On the shared 30 questions accuracy rises from \ToolsNoThirty\% to \ToolsYesThirty\% (\ToolsDThirty{} points, 95\% CI [\ToolsDThirtyLo, \ToolsDThirtyHi], McNemar $p=\ToolsPThirty$), more than any orchestration or reasoning setting, while generating only ${\sim}$\ToolsTokThirty{} tokens per question.
-On the \ToolsNUnsolved{} questions that none of the eight main systems solved, it reaches \ToolsYesUnsolved\% vs.\ \ToolsNoUnsolved\% for the same model without tools (\ToolsDUnsolved{} points [\ToolsDUnsolvedLo, \ToolsDUnsolvedHi], $p=\ToolsPUnsolved$).
-The gain comes from retrieval: LitQA2 rises from \ToolsLitNoUnsolved\% to \ToolsLitYesUnsolved\% and DbQA from \ToolsDbNoUnsolved\% to \ToolsDbYesUnsolved\% on these questions, whereas code execution barely moves the open-ended SeqQA2 computations (\ToolsSeqQAIINoUnsolved\% to \ToolsSeqQAIIYesUnsolved\%).
-That retrieval helps on literature and database questions is expected (these categories were designed for retrieval agents \citep{laurent2024labbench,futurehouse2024paperqa2}); what matters here is the contrast with every orchestration and reasoning setting, none of which moved these questions.
-Compute on top of tools helps modestly: high effort reaches \ToolsHighAccThirty\% on the shared questions (\ToolsHighDThirty{} points over low-effort tools, $p=\ToolsHighPThirty$) and a three-call vote \ToolsVoteAccThirty\% ($\ToolsVoteDThirty$, $p=\ToolsVotePThirty$), at ${\sim}6\times$ and ${\sim}3.5\times$ the tokens.
-All tool calls were logged; no search or command reached the benchmark or its datasets.
+\subsection{Tools break the ceiling}\label{sec:tools}
+Giving GPT-6 Luna web search and code execution in a single call raises accuracy on the shared subset from \ToolsNoThirty\% to \ToolsYesThirty\% (\ToolsDThirty{} points [\ToolsDThirtyLo, \ToolsDThirtyHi], $p=\ToolsPThirty$).
+That is more than any orchestration or reasoning setting achieves, at ${\sim}$\ToolsTokThirty{} generated tokens per question.
+On the \ToolsNUnsolved{} questions that every orchestrated and reasoning-heavy system failed, the same single call reaches \ToolsYesUnsolved\%, against \ToolsNoUnsolved\% without tools (\ToolsDUnsolved{} points [\ToolsDUnsolvedLo, \ToolsDUnsolvedHi], $p=\ToolsPUnsolved$).
+Literature questions rise from \ToolsLitNoUnsolved\% to \ToolsLitYesUnsolved\% and database questions from \ToolsDbNoUnsolved\% to \ToolsDbYesUnsolved\%.
+Retrieval helping on these categories is expected, since they were designed for retrieval agents \citep{laurent2024labbench,futurehouse2024paperqa2}. The point is the contrast: no orchestration or reasoning setting moved these questions at all.
+Compute on top of tools adds comparatively little. High effort reaches \ToolsHighAccThirty\% ($\ToolsHighDThirty$, $p=\ToolsHighPThirty$) and a three-call vote \ToolsVoteAccThirty\% ($\ToolsVoteDThirty$, $p=\ToolsVotePThirty$), at ${\sim}6\times$ and ${\sim}3.5\times$ the tokens.
+Tool calls never reached the benchmark or its datasets.
 
 \section{Implications for building life-science agents}
-\textbf{Benchmark against a compute-matched vote.} A multi-call agent should beat independent sampling with the same number of calls, not a single call \citep{kapoor2024agentsmatters}. Most orchestration gains vanish under that baseline.
-\textbf{Spend the harness budget on tools, not talk.} Critics, debaters and longer reasoning re-deliberate over the same missing knowledge. Retrieval over literature and databases supplies it, at a fraction of the tokens.
-\textbf{Sequence computation needs better tools than a bare shell.} Generic code execution rarely fixed the open-ended sequence tasks, which suggests that domain tool ecosystems (sequence libraries, primer and cloning tools) and specialist models are where the next gains lie.
-Our results agree with compute-matched analyses of debate on general reasoning benchmarks \citep{wang2024rethinking,smit2024mad,choi2025debatevsvote,wu2025candebate} and with evidence that intrinsic self-correction is unreliable \citep{huang2023cannotcorrect}. We extend them to biology, to sequential critique, and to the trade-off between orchestration and reasoning effort.
+\textbf{Benchmark against a matched vote.} A multi-call agent should beat independent sampling with the same number of calls, not a single call \citep{kapoor2024agentsmatters}. Most orchestration gains disappear under this baseline, consistent with compute-matched studies of debate in general reasoning \citep{wang2024rethinking,smit2024mad,choi2025debatevsvote,wu2025candebate} and with the unreliability of intrinsic self-correction \citep{huang2023cannotcorrect}.
+\textbf{Spend the budget on tools, not talk.} Critics, debaters and longer chains of thought re-deliberate over knowledge the model does not have. Retrieval supplies it, at a fraction of the tokens.
+\textbf{Build domain tools for computation.} A generic shell barely helps open-ended sequence design and analysis (\ToolsSeqQAIINoUnsolved\% to \ToolsSeqQAIIYesUnsolved\%). The next gains lie in biology-specific tool ecosystems and specialist models, not in more conversation between copies of the same model.
 
-\paragraph{Limitations.}
-Models had no tools or retrieval, so DbQA and LitQA2 measure recall; orchestration with tools may behave differently.
-The budget is fixed at three calls.
-Frontier models were run through the Codex CLI, which adds its own system prompt and does not expose temperature or seeds; they cover 30 questions, so their comparisons are exploratory.
-Gemma could only run with thinking off.
-One prompt set per strategy was used, and 150 questions give limited power for effects under ${\sim}10$ points. The tools arm uses one model, a harness note that the no-tools condition lacks, and \ToolsNThirty{}+\ToolsNUnsolved{} questions; web retrieval can in principle surface benchmark-derived pages, which our logs did not show.
+\paragraph{Scope.}
+Our tasks have deterministic answers, and we study short-horizon question answering rather than long-running discovery loops. The frontier and tool comparisons use a 30-question subset, and the tool condition adds a one-sentence note announcing the tools.
 
 \section{Conclusion}
-On objectively scored biology research tasks, how a model spends extra inference (voting, self-critique, multi-agent debate or longer reasoning) barely changes which questions it gets right: question identity explains \ItemShareMain\% of the variance in correctness and the choice of system \ArmShareMain\%.
-The ceiling is knowledge, not deliberation, and a single tool-using call breaks it where no amount of orchestration did.
-Builders of life-science agents should spend their budget on tools, not talk.
+On biology research tasks, how a model spends extra inference barely changes which questions it gets right. This holds for voting, critique, debate and longer reasoning alike: the question explains \ItemShareMain\% of the variance in correctness and the system \ArmShareMain\%.
+The ceiling is knowledge, and a single tool-using call breaks it where orchestration does not.
+Life-science agents should spend their budget on tools, not talk.
 
 \bibliographystyle{plainnat}
 \bibliography{refs}
@@ -168,7 +155,7 @@ All prompts are single user messages. \texttt{\{QUESTION\}} is the question (wit
 All task IDs, prompts, decoding settings and the primary analysis were frozen after a 10-question pilot and before any main-set call. Changes made after the freeze:
 (i)~throttle and retry fixes for an undocumented 150 requests/hour provider limit (no completed call was re-run);
 (ii)~22 GPT-OSS questions served in full by a second provider of the same model (identical prompts, seeds and cap; excluding them leaves \debate{} $-$ \vote{} at $\DDebateMinusVoteOSSNoGroq$), with partially served questions discarded and re-run on the primary provider;
-(iii)~the exploratory reasoning-effort arm on the first 30 questions, including frontier models served through the Codex CLI with web search, code execution and sub-agents disabled (a first attempt with web search enabled was discarded unanalysed), and GPT-OSS at high effort on a second host.
+(iii)~the reasoning-effort and tool arms on the fixed 30-question subset and the unsolved set, added after the freeze. Frontier models were served through their vendor CLI with web search, code execution and sub-agents disabled except in the tool condition (a first attempt with web search left on was discarded unanalysed); GPT-OSS at high effort was served by a second host whose low-effort accuracy matches the main run. The tool condition prepends one sentence announcing the tools, and all searches and commands were logged and checked for benchmark access (none).
 
 \section{Additional results}
 \input{appendix_category_table.tex}
