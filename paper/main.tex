@@ -47,7 +47,7 @@ We then ask what actually moves accuracy on biology research tasks: orchestratio
 \paragraph{Contributions.}
 \begin{itemize}
 \setlength\itemsep{0pt}
-\item \textbf{Orchestration adds little at matched compute.} Across three models, self-critique never beats voting and breaks at least as many answers as it repairs. Debate helps only when the model cannot reason on its own. Raising reasoning effort, for six model families, rarely helps either (\S\ref{sec:orch}--\ref{sec:think}).
+\item \textbf{Orchestration adds little at matched compute.} Across three models, self-critique never beats voting and breaks at least as many answers as it repairs. Debate helps only when the model cannot reason on its own, and the gain disappears when the same model is allowed to think. Raising reasoning effort, for six model families, rarely helps either (\S\ref{sec:orch}--\ref{sec:think}).
 \item \textbf{The question decides.} Systems largely solve the same questions and fail the same questions. Question identity explains \ItemShareMain\% of the variance in correctness and the system \ArmShareMain\% (\S\ref{sec:ceiling}).
 \item \textbf{Tools break the ceiling.} One tool-using call solves \ToolsYesUnsolved\% of the questions that no main-study system solved, and more compute on top of tools adds comparatively little (\S\ref{sec:tools}).
 \end{itemize}
@@ -103,6 +103,7 @@ The damage is worst on exact sequence manipulation (SeqQA: \CritMinusVoteSeqQAOS
 For most models, raising reasoning effort multiplies the cost without moving accuracy (Fig.~\ref{fig:tvt}).
 GPT-OSS at high effort generates \TokRatioOSS$\times$ more tokens and scores \TDirectHighOSS\% against \TDirectLowOSS\%; Flash-Lite spends \TokRatioLite$\times$ more tokens and scores \TDirectHighLite\% against \TDirectLowLite\%.
 The one model that gains is GPT-6 Luna, which uses no reasoning tokens at low effort, and its high-effort single call reaches exactly the accuracy its low-effort debate already had (\TDirectHighLuna\%).
+The same substitution appears within a single model. On the same \GThinkN{} questions, Gemma gains \GThinkDMVOff{} points from debate over voting with thinking disabled but \GThinkDMVOn{} with thinking enabled, and one thinking call (\GThinkDirectOn\%) matches debate without thinking (\GThinkDebateOff\%) at ${\sim}$\GThinkTokDirectOn{} generated tokens.
 Debate and reasoning are therefore substitutes, and neither gets past the plateau.
 Stacking orchestration on high effort adds little: GPT-6 Sol scores \TDirectHighSol\% with every strategy while the three-call strategies generate ${\sim}3\times$ the tokens.
 
