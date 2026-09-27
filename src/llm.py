@@ -125,7 +125,7 @@ class LLM:
         self.cfg = cfg
         self.throttle = Throttle(cfg.rpm, cfg.tpm, cfg.rph)
         self.sem = asyncio.Semaphore(concurrency)
-        self.http = httpx.AsyncClient(timeout=180)
+        self.http = httpx.AsyncClient(timeout=600)
 
     async def complete(self, prompt: str, seed: int) -> dict:
         est = len(prompt) // 3 + (0 if self.cfg.tpm_input_only else self.cfg.max_tokens)
