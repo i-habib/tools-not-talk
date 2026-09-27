@@ -141,3 +141,7 @@ spending those calls on independent samples plus a majority vote?
      run without tools.
    - Leakage check: all search queries and commands are logged. Any call whose search or command reaches the
      benchmark itself (LAB-Bench/LABBench2 pages or datasets) is flagged and excluded.
+8. **Compute with tools (added 2026-09-26, 17:45 PT, exploratory).** Same 59 questions and tool setup as item 7.
+   - (a) Luna at high effort with tools, Direct.
+   - (b) Luna at low effort with tools, Vote over three calls (the existing tools call plus two new calls), run only
+     if Codex quota allows.
