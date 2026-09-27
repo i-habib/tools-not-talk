@@ -151,3 +151,5 @@ spending those calls on independent samples plus a majority vote?
    - Setup: Gemma 4 31B with `thinkingLevel=high` (its default and the only alternative to `minimal`) and a
      16,384-token cap, all four strategies, on the same 150 main questions.
    - Deadline rule: if the run does not finish in time, the largest complete prefix in run order is analysed.
+   - Scope change at 20:05 PT: the run was slower than expected (~3.5 calls/min), so it was restricted to Direct,
+     Vote and Debate. The largest complete run-order prefix available at about 01:00 PT is analysed.
