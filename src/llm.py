@@ -176,8 +176,8 @@ class LLM:
                     "think": c.extra.get("think", "low"),
                     "options": {"temperature": c.temperature, "seed": seed, "num_predict": c.max_tokens}}
             r = await self.http.post("http://localhost:11434/api/chat", json=body)
-            if r.status_code == 429 or "usage limit" in r.text.lower():
-                raise QuotaExhausted(r.text[:300])
+            if "usage limit" in r.text.lower() or "weekly" in r.text.lower():
+                raise QuotaExhausted(r.text[:300])  # real quota; "too many concurrent requests" 429s are retried
             r.raise_for_status()
             d = r.json()
             msg = d.get("message") or {}
