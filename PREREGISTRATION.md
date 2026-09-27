@@ -153,3 +153,7 @@ spending those calls on independent samples plus a majority vote?
    - Deadline rule: if the run does not finish in time, the largest complete prefix in run order is analysed.
    - Scope change at 20:05 PT: the run was slower than expected (~3.5 calls/min), so it was restricted to Direct,
      Vote and Debate. The largest complete run-order prefix available at about 01:00 PT is analysed.
+   - Host change at 20:50 PT: Google's Gemma endpoint was congested (a trivial call took 30 s), so the comparison
+     moved to Ollama Cloud (`gemma4:31b-cloud`) with thinking off vs on on the same host. The setup is Direct, Vote
+     and Debate on all 150 questions. The thinking-off Ollama run also serves as a cross-host replication of the main
+     Gemma result.

@@ -71,6 +71,11 @@ MODELS = {
                                  extra={"effort": "low", "tools": True}),
     "gpt-6-luna-tools-high": ModelCfg("gpt-6-luna-tools-high", "codex", "gpt-6-luna", rpm=30, tpm=10**9,
                                       extra={"effort": "high", "tools": True}),
+    # Gemma 4 31B via Ollama cloud: thinking off vs on on the same host (Google endpoint congested 2026-09-26 20:45).
+    "gemma-4-31b-ollama-off": ModelCfg("gemma-4-31b-ollama-off", "ollama", "gemma4:31b-cloud", rpm=60, tpm=10**9,
+                                       extra={"think": False}),
+    "gemma-4-31b-ollama-on": ModelCfg("gemma-4-31b-ollama-on", "ollama", "gemma4:31b-cloud", rpm=60, tpm=10**9,
+                                      max_tokens=16384, extra={"think": True}),
     # GPT-OSS via Ollama cloud (added 2026-09-26 14:15): high-reasoning arm + a low Direct provider check.
     "gpt-oss-120b-ollama-high": ModelCfg("gpt-oss-120b-ollama-high", "ollama", "gpt-oss:120b-cloud", rpm=30,
                                          tpm=10**9, max_tokens=16384, extra={"think": "high"}),
