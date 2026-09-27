@@ -30,7 +30,7 @@ On 150 pre-registered, deterministically scored biology research questions (LAB-
 Critique never beats voting, and debate helps only a model whose reasoning is switched off (\DDebateMinusVoteGemma{} points).
 Raising reasoning effort rarely helps (GPT-OSS spends \TokRatioOSS$\times$ more tokens for no gain).
 Instead, correctness is set by the question: question identity explains \ItemShareMain\% of its variance and the choice of model, strategy and effort \ArmShareMain\%.
-Giving the model tools breaks this ceiling. A single tool-using call with web search and code execution raises accuracy from \ToolsNoThirty\% to \ToolsYesThirty\%, and solves \ToolsYesUnsolved\% of the questions that no orchestrated or reasoning-heavy system solved (vs.\ \ToolsNoUnsolved\% without tools).
+The ceiling is missing knowledge, not missing deliberation: a single call with web search and code execution solves \ToolsYesUnsolved\% of the questions that every orchestrated or reasoning-heavy system failed (vs.\ \ToolsNoUnsolved\% for the same model without tools), and more compute on top of tools adds only a further, non-significant \ToolsHighDUnsolved{} to \ToolsHighDThirty{} points.
 For life-science agents, the budget belongs in tools, not in talk.
 \end{abstract}
 
@@ -49,7 +49,7 @@ We then ask a second question the agent literature rarely asks: does letting a s
 (2)~Critique never helps: it breaks at least as many correct answers as it repairs, and for models that reason it is most harmful on exact sequence manipulation.
 (3)~Thinking longer is not a way out: higher reasoning effort helps only a model that otherwise does not reason at all, and then only up to the level its low-effort debate already reached; stacking orchestration on top adds nothing reliable.
 (4)~Whether a system is right depends overwhelmingly on \emph{which question} it faces and barely on \emph{how} it spends inference: every system solves and fails the same questions (Fig.~\ref{fig:ceiling}).
-(5)~These errors are missing knowledge, not missing deliberation. One tool-using call with web search and code execution solves nearly half of the questions that every other configuration failed.
+(5)~These errors are missing knowledge, not missing deliberation. One tool-using call with web search and code execution solves nearly half of the questions that every other configuration failed, and extra compute on top of tools adds comparatively little.
 
 \section{Setup}
 \paragraph{Tasks.}
@@ -133,7 +133,9 @@ To test whether the ceiling reflects missing knowledge, we give GPT-6 Luna (low 
 On the shared 30 questions accuracy rises from \ToolsNoThirty\% to \ToolsYesThirty\% (\ToolsDThirty{} points, 95\% CI [\ToolsDThirtyLo, \ToolsDThirtyHi], McNemar $p=\ToolsPThirty$), more than any orchestration or reasoning setting, while generating only ${\sim}$\ToolsTokThirty{} tokens per question.
 On the \ToolsNUnsolved{} questions that none of the eight main systems solved, it reaches \ToolsYesUnsolved\% vs.\ \ToolsNoUnsolved\% for the same model without tools (\ToolsDUnsolved{} points [\ToolsDUnsolvedLo, \ToolsDUnsolvedHi], $p=\ToolsPUnsolved$).
 The gain comes from retrieval: LitQA2 rises from \ToolsLitNoUnsolved\% to \ToolsLitYesUnsolved\% and DbQA from \ToolsDbNoUnsolved\% to \ToolsDbYesUnsolved\% on these questions, whereas code execution barely moves the open-ended SeqQA2 computations (\ToolsSeqQAIINoUnsolved\% to \ToolsSeqQAIIYesUnsolved\%).
-All \ToolsSearches{} searches and \ToolsExecs{} commands were logged, and none reached the benchmark or its datasets.
+That retrieval helps on literature and database questions is expected (these categories were designed for retrieval agents \citep{laurent2024labbench,futurehouse2024paperqa2}); what matters here is the contrast with every orchestration and reasoning setting, none of which moved these questions.
+Compute on top of tools helps modestly: high effort reaches \ToolsHighAccThirty\% on the shared questions (\ToolsHighDThirty{} points over low-effort tools, $p=\ToolsHighPThirty$) and a three-call vote \ToolsVoteAccThirty\% ($\ToolsVoteDThirty$, $p=\ToolsVotePThirty$), at ${\sim}6\times$ and ${\sim}3.5\times$ the tokens.
+All tool calls were logged; no search or command reached the benchmark or its datasets.
 
 \section{Implications for building life-science agents}
 \textbf{Benchmark against a compute-matched vote.} A multi-call agent should beat independent sampling with the same number of calls, not a single call \citep{kapoor2024agentsmatters}. Most orchestration gains vanish under that baseline.

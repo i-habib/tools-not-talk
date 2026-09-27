@@ -145,3 +145,4 @@ spending those calls on independent samples plus a majority vote?
    - (a) Luna at high effort with tools, Direct.
    - (b) Luna at low effort with tools, Vote over three calls (three new tools calls), run only
      if Codex quota allows.
+   - Outcome: both runs completed, with 0 leakage flags.

@@ -32,14 +32,33 @@ def direct(model: str):
     return {q: r for (q, s, i), r in calls.items() if s == "direct" and i == 0}
 
 
+def voted(model: str):
+    """Majority vote over the three indep3 tool calls, as a pseudo-record {text, usage, tool_details}."""
+    calls = A.load_calls(model, "main")
+    out = {}
+    for q, t in TASKS.items():
+        recs = [calls.get((q, "indep3", i)) for i in range(3)]
+        if any(r is None for r in recs):
+            continue
+        ans = [S.parse_answer(r["text"], t) for r in recs]
+        final = A.vote(ans, [S.parse_confidence(r["text"]) for r in recs], t)
+        out[q] = {"text": f"<answer>{final}</answer>" if final is not None else "",
+                  "usage": {"output_tokens": sum(r["usage"]["output_tokens"] for r in recs)},
+                  "tool_items": [x for r in recs for x in r.get("tool_items", [])],
+                  "tool_details": [x for r in recs for x in r.get("tool_details", [])]}
+    return out
+
+
 def leaked(rec) -> bool:
     return bool(LEAK.search(json.dumps(rec.get("tool_details", []))))
 
 
 def compare(qids, base, tools):
-    qs = [q for q in qids if q in base and q in tools and not leaked(tools[q])]
-    b = np.array([S.is_correct(S.parse_answer(base[q]["text"], TASKS[q]), TASKS[q]) for q in qs])
-    t = np.array([S.is_correct(S.parse_answer(tools[q]["text"], TASKS[q]), TASKS[q]) for q in qs])
+    qs = [q for q in qids if q in base and q in tools and not leaked(tools[q]) and not leaked(base[q])]
+    if not qs:
+        return None
+    b = np.array([S.is_correct(S.parse_answer(base[q]["text"], TASKS[q]), TASKS[q]) for q in qs], bool)
+    t = np.array([S.is_correct(S.parse_answer(tools[q]["text"], TASKS[q]), TASKS[q]) for q in qs], bool)
     d = t.astype(float) - b.astype(float)
     idx = np.random.default_rng(A.BOOT_SEED).integers(0, len(d), (A.N_BOOT, len(d)))
     m = d[idx].mean(1)
@@ -62,6 +81,11 @@ def main():
     kinds = Counter(k for r in tools.values() for k in r.get("tool_items", []))
     out = {"first30": compare(Q30, base, tools), "unsolved": compare(UNSOLVED, base, tools),
            "n_leak_flagged": len(leaks), "tool_calls": dict(kinds)}
+    # compute on top of tools: each vs tools@low Direct (paired, same questions)
+    for name, arm in [("tools_high", direct("gpt-6-luna-tools-high")), ("tools_vote", voted("gpt-6-luna-tools"))]:
+        if arm:
+            out[name] = {"first30": compare(Q30, tools, arm), "unsolved": compare(UNSOLVED, tools, arm),
+                         "n_leak_flagged": sum(leaked(r) for r in arm.values())}
     (A.OUT / "tools_arm.json").write_text(json.dumps(out, indent=1))
     print(json.dumps(out, indent=1))
 

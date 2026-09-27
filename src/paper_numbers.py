@@ -129,6 +129,15 @@ def main():
             bc = (v or {}).get("by_category", {}).get(c)
             add(f"Tools{C}No{K}", pct(bc and bc["no_tools"], 0))
             add(f"Tools{C}Yes{K}", pct(bc and bc["tools"], 0))
+    for arm, A_ in [("tools_high", "High"), ("tools_vote", "Vote")]:
+        for key, K in [("first30", "Thirty"), ("unsolved", "Unsolved")]:
+            v = (ta.get(arm) or {}).get(key)
+            add(f"Tools{A_}Acc{K}", pct(v and v["tools"], 0))
+            add(f"Tools{A_}D{K}", pp(v and v["delta"], 0))
+            add(f"Tools{A_}D{K}Lo", pp(v and v["ci95"][0], 0))
+            add(f"Tools{A_}D{K}Hi", pp(v and v["ci95"][1], 0))
+            add(f"Tools{A_}P{K}", "??" if not v else f"{v['mcnemar']['p_exact']:.2g}")
+            add(f"Tools{A_}Tok{K}", f"{v['tokens_tools']:,.0f}" if v else "??")
     add("ToolsLeaks", ta.get("n_leak_flagged", "??"))
     add("ToolsSearches", ta.get("tool_calls", {}).get("web_search", "??"))
     add("ToolsExecs", ta.get("tool_calls", {}).get("command_execution", "??"))
