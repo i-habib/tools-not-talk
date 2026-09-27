@@ -146,3 +146,8 @@ spending those calls on independent samples plus a majority vote?
    - (b) Luna at low effort with tools, Vote over three calls (three new tools calls), run only
      if Codex quota allows.
    - Outcome: both runs completed, with 0 leakage flags.
+9. **Gemma thinking on vs off (added 2026-09-26, 18:00 PT).** This tests within one model whether debate substitutes
+   for reasoning.
+   - Setup: Gemma 4 31B with `thinkingLevel=high` (its default and the only alternative to `minimal`) and a
+     16,384-token cap, all four strategies, on the same 150 main questions.
+   - Deadline rule: if the run does not finish in time, the largest complete prefix in run order is analysed.

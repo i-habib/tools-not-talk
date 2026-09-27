@@ -50,6 +50,10 @@ MODELS = {
                             # Default Gemma 4 thinking exhausted the 1024-token cap on every pilot call (no answer);
                             # "minimal" is the only accepted thinking control ("low"/thinkingBudget -> HTTP 400).
                             extra={"thinkingConfig": {"thinkingLevel": "minimal"}}),
+    # Gemma 4 with thinking on: the API accepts only "minimal" (off) or "high" (= its default).
+    "gemma-4-31b-think": ModelCfg("gemma-4-31b-think", "gemini", "gemma-4-31b-it", rpm=25, tpm=15_000,
+                                  tpm_input_only=True, max_tokens=16384,
+                                  extra={"thinkingConfig": {"thinkingLevel": "high"}}),
     "flash-lite": ModelCfg("flash-lite", "gemini", "gemini-3.5-flash-lite", rpm=13, tpm=230_000, tpm_input_only=True,
                            extra={"thinkingConfig": {"thinkingLevel": "low"}}),
     # Exploratory supplement (added after freeze): frontier GPT models via the Codex CLI (ChatGPT account).
