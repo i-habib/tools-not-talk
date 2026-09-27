@@ -52,7 +52,7 @@ def paired(a: np.ndarray, b: np.ndarray) -> dict:
 
 
 def main():
-    off_name, on_name = (sys.argv[1], sys.argv[2]) if len(sys.argv) > 2 else ("gemma-4-31b-ollama-off", "gemma-4-31b-ollama-on")
+    off_name, on_name = (sys.argv[1], sys.argv[2]) if len(sys.argv) > 2 else ("gemma-4-31b", "gemma-4-31b-ollama-on")
     off, on = correctness(off_name), correctness(on_name)
     qs = [q for q in TASKS if q in off and q in on]
     if not qs:
@@ -66,6 +66,12 @@ def main():
         res[tag]["debate_minus_vote"] = paired(arr(d, "multi3"), arr(d, "indep3"))
     res["direct_on_minus_off"] = paired(arr(on, "direct"), arr(off, "direct"))
     res["direct_on_minus_debate_off"] = paired(arr(on, "direct"), arr(off, "multi3"))
+    # host check: thinking-off on Ollama vs thinking-off on Google, on questions both completed
+    ho = correctness("gemma-4-31b-ollama-off")
+    hq = [q for q in TASKS if q in ho and q in off]
+    if hq:
+        res["host_check"] = {"n": len(hq), **{f"{s}_google": float(np.mean([off[q][s] for q in hq])) for s in STRATS},
+                             **{f"{s}_ollama": float(np.mean([ho[q][s] for q in hq])) for s in STRATS}}
     (A.OUT / "gemma_think.json").write_text(json.dumps(res, indent=1))
     print(json.dumps(res, indent=1))
 

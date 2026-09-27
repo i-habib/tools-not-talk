@@ -157,3 +157,6 @@ spending those calls on independent samples plus a majority vote?
      moved to Ollama Cloud (`gemma4:31b-cloud`) with thinking off vs on on the same host. The setup is Direct, Vote
      and Debate on all 150 questions. The thinking-off Ollama run also serves as a cross-host replication of the main
      Gemma result.
+   - 21:10 PT: Ollama serialises requests (about 76 s per call even with thinking off), so the thinking-off Ollama
+     run was stopped. The comparison uses the completed Google thinking-off run against the Ollama thinking-on run
+     on the same questions. The questions both hosts completed with thinking off are reported as a host check.
