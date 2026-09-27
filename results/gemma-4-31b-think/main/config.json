@@ -1,0 +1,16 @@
+{
+ "name": "gemma-4-31b-think",
+ "provider": "gemini",
+ "model": "gemma-4-31b-it",
+ "rpm": 25,
+ "tpm": 15000,
+ "rph": 0,
+ "tpm_input_only": true,
+ "max_tokens": 16384,
+ "temperature": 0.6,
+ "extra": {
+  "thinkingConfig": {
+   "thinkingLevel": "high"
+  }
+ }
+}

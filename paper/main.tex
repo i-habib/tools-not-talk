@@ -26,11 +26,11 @@
 
 \begin{abstract}
 Agentic systems for biology are increasingly built around orchestration: critics that review answers, teams of role-playing scientists that debate, and models that reason for longer.
-We show that on objectively scored biology research tasks this machinery buys almost nothing, and we identify why.
-Across 150 pre-registered LAB-Bench and LABBench2 questions, compared at a matched budget of three model calls, self-critique never beats simple majority voting, multi-agent debate helps only a model whose reasoning is switched off, and a \TokRatioOSS-fold increase in generated tokens from longer reasoning leaves accuracy unchanged.
+We show that on objectively scored biology research tasks this machinery adds little beyond what matched independent sampling provides, and we identify why.
+Across 150 pre-registered LAB-Bench and LABBench2 questions, compared at a matched budget of three model calls, self-critique never beats simple majority voting, multi-agent debate helps only a model whose reasoning is switched off, and a \TokRatioOSS-fold increase in generated tokens from longer reasoning does not improve accuracy.
 The reason is a ceiling set by the questions themselves: which question is asked explains \ItemShareMain\% of the variance in correctness, while the choice of model, strategy and reasoning effort explains \ArmShareMain\%.
-That ceiling is missing knowledge, not missing deliberation.
-A single model call with web search and code execution solves \ToolsYesUnsolved\% of the questions that every orchestrated and reasoning-heavy system failed.
+That ceiling is largely missing knowledge rather than missing deliberation.
+A single model call with web search and code execution solves \ToolsYesUnsolved\% of the questions that all eight orchestrated systems in our main study failed.
 For life-science agents, the budget belongs in tools, not talk.
 \end{abstract}
 
@@ -47,9 +47,9 @@ We then ask what actually moves accuracy on biology research tasks: orchestratio
 \paragraph{Contributions.}
 \begin{itemize}
 \setlength\itemsep{0pt}
-\item \textbf{Orchestration buys little at matched compute.} Across three models, self-critique never beats voting and repairs no more answers than it breaks. Debate helps only when the model cannot reason on its own. Raising reasoning effort, for six model families, rarely helps either (\S\ref{sec:orch}--\ref{sec:think}).
+\item \textbf{Orchestration adds little at matched compute.} Across three models, self-critique never beats voting and repairs no more answers than it breaks. Debate helps only when the model cannot reason on its own. Raising reasoning effort, for six model families, rarely helps either (\S\ref{sec:orch}--\ref{sec:think}).
 \item \textbf{The question decides.} Every system solves the same questions and fails the same questions. Question identity explains \ItemShareMain\% of the variance in correctness and the system \ArmShareMain\% (\S\ref{sec:ceiling}).
-\item \textbf{Tools break the ceiling.} One tool-using call solves \ToolsYesUnsolved\% of the questions that no other configuration solved, and more compute on top of tools adds comparatively little (\S\ref{sec:tools}).
+\item \textbf{Tools break the ceiling.} One tool-using call solves \ToolsYesUnsolved\% of the questions that no main-study system solved, and more compute on top of tools adds comparatively little (\S\ref{sec:tools}).
 \end{itemize}
 
 \section{Setup}
@@ -85,9 +85,9 @@ Flash-Lite & \NLite & \AccDirectLite & \AccVoteLite & \AccCritiqueLite & \AccDeb
 \end{tabular}
 \end{table}
 
-\subsection{Orchestration buys little at matched compute}\label{sec:orch}
-Three calls spent on orchestration do no better than three calls spent on independent samples (Table~\ref{tab:main}).
-\textbf{Self-critique never beats voting} for any model ($\DCritiqueMinusVoteOSS$, $\DCritiqueMinusVoteGemma$, $\DCritiqueMinusVoteLite$ points; pooled $\DPooledCritiqueMinusVote$ [$\DPooledCritiqueMinusVoteLo$, $\DPooledCritiqueMinusVoteHi$]).
+\subsection{Orchestration adds little at matched compute}\label{sec:orch}
+Three calls spent on orchestration generally do no better than three calls spent on independent samples (Table~\ref{tab:main}).
+\textbf{Self-critique does not beat voting} for any of the three models ($\DCritiqueMinusVoteOSS$, $\DCritiqueMinusVoteGemma$, $\DCritiqueMinusVoteLite$ points; pooled $\DPooledCritiqueMinusVote$ [$\DPooledCritiqueMinusVoteLo$, $\DPooledCritiqueMinusVoteHi$]).
 It breaks correct answers as readily as it fixes wrong ones: relative to the vote it rescues \RescueCritiqueOSS\%, \RescueCritiqueGemma\% and \RescueCritiqueLite\% of errors but corrupts \CorruptCritiqueOSS\%, \CorruptCritiqueGemma\% and \CorruptCritiqueLite\% of correct answers.
 The damage is worst on exact sequence manipulation (SeqQA: \CritMinusVoteSeqQAOSS{} and \CritMinusVoteSeqQALite{} points for GPT-OSS and Flash-Lite), where a fluent but wrong critique argues the model out of a correct computation.
 \textbf{Debate helps only the model that cannot think.} For Gemma, whose thinking is disabled, debate beats voting by \DDebateMinusVoteGemma{} points ($p=\PDebateMinusVoteGemma$); for the two models that reason, it does not ($\DDebateMinusVoteOSS$ and $\DDebateMinusVoteLite$).
@@ -95,7 +95,7 @@ The damage is worst on exact sequence manipulation (SeqQA: \CritMinusVoteSeqQAOS
 \begin{figure}[t]
 \centering
 \figifexists[width=\linewidth]{figures/fig_think_vs_talk.pdf}
-\caption{\textbf{Every way of spending inference lands on the same per-model plateau; tools rise above it.} Accuracy vs.\ generated tokens per question on a shared 30-question set. Colour marks the strategy; circles are low reasoning effort and stars high. Across nearly two orders of magnitude in tokens, accuracy barely moves within a model. The black diamond, one GPT-6 Luna call with web search and code execution, is the only configuration above its plateau, and it is among the cheapest.}
+\caption{\textbf{Every way of spending inference lands on a similar per-model plateau; tools rise above it.} Accuracy vs.\ generated tokens per question on a shared 30-question set, one panel per model. Colour marks the strategy. Marker shape marks reasoning effort: circles ($\bullet$) are low effort and stars ($\star$) high effort. GPT-6 Sol and GPT-5.6 Terra were run at high effort only. Across nearly two orders of magnitude in tokens, accuracy moves little within a model. The black diamond ($\blacklozenge$) is one GPT-6 Luna call with web search and code execution. It is the only configuration clearly above its model's plateau, and among the cheapest.}
 \label{fig:tvt}
 \end{figure}
 
@@ -104,28 +104,28 @@ Raising reasoning effort multiplies the cost without moving accuracy (Fig.~\ref{
 GPT-OSS at high effort generates \TokRatioOSS$\times$ more tokens and scores \TDirectHighOSS\% against \TDirectLowOSS\%; Flash-Lite spends \TokRatioLite$\times$ more tokens and scores \TDirectHighLite\% against \TDirectLowLite\%.
 The one model that gains is GPT-6 Luna, which uses no reasoning tokens at low effort, and it gains only up to the level its low-effort debate had already reached (\TDirectHighLuna\% vs.\ \TDebateLowLuna\%).
 Debate and reasoning are therefore substitutes, and neither gets past the plateau.
-Stacking orchestration on high effort adds nothing: GPT-6 Sol scores \TDirectHighSol\% with every strategy while the three-call strategies generate ${\sim}3\times$ the tokens.
+Stacking orchestration on high effort adds little: GPT-6 Sol scores \TDirectHighSol\% with every strategy while the three-call strategies generate ${\sim}3\times$ the tokens.
 
 \begin{figure}[t]
 \centering
 \figifexists[width=\linewidth]{figures/fig_ceiling_main.pdf}
-\caption{\textbf{The question, not the system, decides.} Correctness of every model $\times$ strategy system (rows) on every question (columns, sorted by the fraction of systems correct). All systems solve and fail the same questions. Question identity explains \ItemShareMain\% [\ItemShareMainLo, \ItemShareMainHi] of the variance in correctness; the system explains \ArmShareMain\% [\ArmShareMainLo, \ArmShareMainHi].}
+\caption{\textbf{The question, far more than the system, decides.} Correctness of every model $\times$ strategy system (rows) on every question (columns, sorted by the fraction of systems correct). Systems largely solve and fail the same questions. Question identity explains \ItemShareMain\% [\ItemShareMainLo, \ItemShareMainHi] of the variance in correctness; the system explains \ArmShareMain\% [\ArmShareMainLo, \ArmShareMainHi].}
 \label{fig:ceiling}
 \end{figure}
 
-\subsection{The question decides}\label{sec:ceiling}
+\subsection{The question, not the system, decides}\label{sec:ceiling}
 A two-way decomposition of the correctness matrix attributes \ItemShareMain\% of the variance to the question and \ArmShareMain\% to the system (Fig.~\ref{fig:ceiling}).
 The pattern holds across all \NArmsThirty{} model, strategy and effort configurations on the shared subset, frontier models at high effort included (\ItemShareThirty\% vs.\ \ArmShareThirty\%).
-Every system solves the same easy questions and fails the same hard ones.
+Systems largely solve the same easy questions and fail the same hard ones.
 The \NUnsolved{} questions that no system solves are dominated by literature and database recall (\NUnsolvedRecall{}) and open-ended sequence computation (\NUnsolvedSeqQAII{}).
-These are failures of knowledge, which no amount of deliberation can supply.
+These are failures of knowledge, which additional deliberation did not supply in any configuration we tested.
 
 \subsection{Tools break the ceiling}\label{sec:tools}
 Giving GPT-6 Luna web search and code execution in a single call raises accuracy on the shared subset from \ToolsNoThirty\% to \ToolsYesThirty\% (\ToolsDThirty{} points [\ToolsDThirtyLo, \ToolsDThirtyHi], $p=\ToolsPThirty$).
 That is more than any orchestration or reasoning setting achieves, at ${\sim}$\ToolsTokThirty{} generated tokens per question.
-On the \ToolsNUnsolved{} questions that every orchestrated and reasoning-heavy system failed, the same single call reaches \ToolsYesUnsolved\%, against \ToolsNoUnsolved\% without tools (\ToolsDUnsolved{} points [\ToolsDUnsolvedLo, \ToolsDUnsolvedHi], $p=\ToolsPUnsolved$).
+On the \ToolsNUnsolved{} questions that all eight main-study systems (two models $\times$ four strategies) failed, the same single call reaches \ToolsYesUnsolved\%, against \ToolsNoUnsolved\% without tools (\ToolsDUnsolved{} points [\ToolsDUnsolvedLo, \ToolsDUnsolvedHi], $p=\ToolsPUnsolved$).
 Literature questions rise from \ToolsLitNoUnsolved\% to \ToolsLitYesUnsolved\% and database questions from \ToolsDbNoUnsolved\% to \ToolsDbYesUnsolved\%.
-Retrieval helping on these categories is expected, since they were designed for retrieval agents \citep{laurent2024labbench,futurehouse2024paperqa2}. The point is the contrast: no orchestration or reasoning setting moved these questions at all.
+Retrieval helping on these categories is expected, since they were designed for retrieval agents \citep{laurent2024labbench,futurehouse2024paperqa2}. The point is the contrast: none of the eight orchestrated systems solved any of them.
 Compute on top of tools adds comparatively little. High effort reaches \ToolsHighAccThirty\% ($\ToolsHighDThirty$, $p=\ToolsHighPThirty$) and a three-call vote \ToolsVoteAccThirty\% ($\ToolsVoteDThirty$, $p=\ToolsVotePThirty$), at ${\sim}6\times$ and ${\sim}3.5\times$ the tokens.
 Tool calls never reached the benchmark or its datasets.
 
@@ -139,7 +139,7 @@ Our tasks have deterministic answers, and we study short-horizon question answer
 
 \section{Conclusion}
 On biology research tasks, how a model spends extra inference barely changes which questions it gets right. This holds for voting, critique, debate and longer reasoning alike: the question explains \ItemShareMain\% of the variance in correctness and the system \ArmShareMain\%.
-The ceiling is knowledge, and a single tool-using call breaks it where orchestration does not.
+The ceiling is largely knowledge, and a single tool-using call lifts it where orchestration did not.
 Life-science agents should spend their budget on tools, not talk.
 
 \bibliographystyle{plainnat}

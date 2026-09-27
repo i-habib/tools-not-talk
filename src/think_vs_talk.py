@@ -151,9 +151,9 @@ def figure(table):
     axes[0][0].set_ylabel("accuracy (%)", fontsize=7.5)
     fig.supxlabel("generated tokens per question (log)", fontsize=7.5, y=0.13)
     handles = [plt.Line2D([], [], color=c, marker="s", ls="", ms=5, label=names[s]) for s, c in colors.items()]
-    handles += [plt.Line2D([], [], color="k", marker="o", ls="", ms=4, mfc="w", label="low reasoning"),
-                plt.Line2D([], [], color="k", marker="*", ms=8, ls="", mfc="w", label="high reasoning"),
-                plt.Line2D([], [], color="#111111", marker="D", ms=5, ls="", label="1 call + tools")]
+    handles += [plt.Line2D([], [], color="k", marker="o", ls="", ms=4, mfc="w", label="● = low reasoning effort"),
+                plt.Line2D([], [], color="k", marker="*", ms=8, ls="", mfc="w", label="★ = high reasoning effort"),
+                plt.Line2D([], [], color="#111111", marker="D", ms=5, ls="", label="◆ = 1 call + tools")]
     fig.legend(handles=handles, fontsize=6.5, ncol=7, loc="lower center", frameon=False, bbox_to_anchor=(0.5, -0.01))
     fig.tight_layout(rect=(0, 0.12, 1, 1), w_pad=0.4)
     A.FIG.mkdir(parents=True, exist_ok=True)
