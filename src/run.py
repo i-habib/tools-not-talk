@@ -41,6 +41,8 @@ async def main(args):
     if args.exclude_file and Path(args.exclude_file).exists():
         drop = set(Path(args.exclude_file).read_text().split())
         tasks = [t for t in tasks if t["qid"] not in drop]
+    if getattr(args, "reverse", False):
+        tasks = tasks[::-1]
     if args.limit:
         tasks = tasks[: args.limit]
     out_dir = ROOT / "results" / (args.results_name or cfg.name) / args.split
@@ -146,4 +148,5 @@ if __name__ == "__main__":
     ap.add_argument("--log-name", default="calls.jsonl")
     ap.add_argument("--ids-file", help="only run these question ids (one per line)")
     ap.add_argument("--exclude-file", help="skip these question ids (one per line)")
+    ap.add_argument("--reverse", action="store_true", help="process questions from the end of the run order")
     asyncio.run(main(ap.parse_args()))

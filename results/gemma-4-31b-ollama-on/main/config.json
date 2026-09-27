@@ -1,0 +1,14 @@
+{
+ "name": "gemma-4-31b-ollama-on",
+ "provider": "ollama",
+ "model": "gemma4:31b-cloud",
+ "rpm": 60,
+ "tpm": 1000000000,
+ "rph": 0,
+ "tpm_input_only": false,
+ "max_tokens": 16384,
+ "temperature": 0.6,
+ "extra": {
+  "think": true
+ }
+}

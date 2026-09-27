@@ -53,18 +53,26 @@ def paired(a: np.ndarray, b: np.ndarray) -> dict:
 
 def main():
     off_name, on_name = (sys.argv[1], sys.argv[2]) if len(sys.argv) > 2 else ("gemma-4-31b", "gemma-4-31b-ollama-on")
-    off, on = correctness(off_name), correctness(on_name)
+    off = correctness(off_name)
+    on_google, on_ollama = correctness("gemma-4-31b-think"), correctness(on_name)
+    on = {**on_ollama, **on_google}  # prefer same-host (Google) thinking-on where both exist
+    host = {q: ("google" if q in on_google else "ollama") for q in on}
     qs = [q for q in TASKS if q in off and q in on]
     if not qs:
         print("no overlapping complete questions yet")
         return
     arr = lambda d, s: np.array([d[q][s] for q in qs], bool)  # noqa: E731
-    res = {"n": len(qs)}
+    res = {"n": len(qs), "n_same_host": sum(host[q] == "google" for q in qs)}
     for tag, d in [("off", off), ("on", on)]:
         res[tag] = {s: float(arr(d, s).mean()) for s in STRATS}
         res[tag]["tokens"] = {s: float(np.mean([d[q]["tokens"][s] for q in qs])) for s in STRATS}
         res[tag]["debate_minus_vote"] = paired(arr(d, "multi3"), arr(d, "indep3"))
     res["direct_on_minus_off"] = paired(arr(on, "direct"), arr(off, "direct"))
+    for h in ["google", "ollama"]:
+        hq = [q for q in qs if host[q] == h]
+        if hq:
+            res[f"by_host_{h}"] = {"n": len(hq), **{f"{s}_{t}": float(np.mean([d[q][s] for q in hq]))
+                                                    for s in STRATS for t, d in [("off", off), ("on", on)]}}
     res["direct_on_minus_debate_off"] = paired(arr(on, "direct"), arr(off, "multi3"))
     # host check: thinking-off on Ollama vs thinking-off on Google, on questions both completed
     ho = correctness("gemma-4-31b-ollama-off")

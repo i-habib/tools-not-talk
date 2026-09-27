@@ -160,3 +160,6 @@ spending those calls on independent samples plus a majority vote?
    - 21:10 PT: Ollama serialises requests (about 76 s per call even with thinking off), so the thinking-off Ollama
      run was stopped. The comparison uses the completed Google thinking-off run against the Ollama thinking-on run
      on the same questions. The questions both hosts completed with thinking off are reported as a host check.
+   - 21:30 PT: the Google thinking-on run was restarted in reverse run order, so the two hosts cover disjoint
+     questions. Thinking-on results are pooled across hosts (preferring the same-host Google result where both
+     exist) and are also reported by host.
