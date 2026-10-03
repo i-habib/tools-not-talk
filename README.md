@@ -51,6 +51,7 @@ Download the LAB-Bench parquet files for ProtocolQA, SeqQA, DbQA, and LitQA2 fro
 ```bash
 python src/fetch_seqqa2_files.py      # SeqQA2 input and validator files
 python src/data.py                    # writes data/tasks.jsonl; IDs should match data/task_ids.csv
+python -m pytest -q tests              # 98 tests; several need data/tasks.jsonl
 
 python src/analyze.py --split main --models gpt-oss-120b gemma-4-31b flash-lite
 python src/think_vs_talk.py
