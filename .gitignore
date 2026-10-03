@@ -4,9 +4,11 @@ __pycache__/
 vendor/
 data/raw/
 data/labbench2_files/
-# Benchmark text must not be redistributed into crawlable repos (LAB-Bench canary); these contain question text.
+# Benchmark text must not be redistributed into crawlable repos (LAB-Bench canary). Raw call logs contain
+# question text. The tracked results/**/calls*.jsonl files are sanitized copies written by
+# src/export_public_logs.py; never commit raw logs over them.
 data/tasks.jsonl
-results/**/calls.jsonl
+results/**/calls*.jsonl
 .DS_Store
 logs/
 paper/*.aux
@@ -16,8 +18,7 @@ paper/*.bbl
 paper/*.blg
 results/_discarded/
 results/_codex_empty/
-paper/*.aux
-paper/*.log
-paper/*.out
-paper/*.bbl
-paper/*.blg
+.pytest_cache/
+data/raw
+data/labbench2_files
+vendor

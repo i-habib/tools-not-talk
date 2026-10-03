@@ -45,12 +45,14 @@ def voted(model: str):
         out[q] = {"text": f"<answer>{final}</answer>" if final is not None else "",
                   "usage": {"output_tokens": sum(r["usage"]["output_tokens"] for r in recs)},
                   "tool_items": [x for r in recs for x in r.get("tool_items", [])],
-                  "tool_details": [x for r in recs for x in r.get("tool_details", [])]}
+                  "tool_details": [x for r in recs for x in r.get("tool_details", [])],
+                  "tool_leak": any(r.get("tool_leak", False) for r in recs)}
     return out
 
 
 def leaked(rec) -> bool:
-    return bool(LEAK.search(json.dumps(rec.get("tool_details", []))))
+    # public logs carry the precomputed flag instead of the search queries (see export_public_logs.py)
+    return rec.get("tool_leak", False) or bool(LEAK.search(json.dumps(rec.get("tool_details", []))))
 
 
 def compare(qids, base, tools):

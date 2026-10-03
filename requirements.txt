@@ -1,0 +1,13 @@
+httpx==0.28.1
+pandas==3.0.6
+pyarrow==25.0.1
+numpy==2.5.3
+scipy==1.18.1
+matplotlib==3.11.2
+biopython==1.88
+primer3-py==2.3.1
+pyahocorasick==2.3.1
+rapidfuzz==3.14.6
+python-dotenv==1.2.3
+pydantic==2.13.5
+pytest==9.1.1
