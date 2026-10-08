@@ -85,7 +85,7 @@ If you need the raw logs for research, open an issue.
 ```bibtex
 @inproceedings{habib2026toolsnottalk,
   title     = {Tools, Not Talk: The Knowledge Ceiling of Biology Agents},
-  author    = {Habib, Ivan},
+  author    = {Habib, Ivan and Mana, Arnav},
   booktitle = {NeurIPS 2026 AgenticLS Workshop},
   year      = {2026}
 }
